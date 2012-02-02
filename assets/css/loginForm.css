@@ -1,0 +1,95 @@
+/* 
+    Document   : loginForm
+    Created on : 02.02.2012, 11:05:45
+    Author     : georgeee
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+.authMethodSwitcher{
+    list-style: none;
+    clear:both;
+    overflow:auto;
+}
+.authMethodSwitcherDiv{
+    overflow:auto;
+    clear:both;
+}
+.authMethod{
+    margin: 0 3px 0 0;
+    width: 60px;
+    float:left;
+}
+.authMethodIcon{
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 0 auto;
+}
+.authMethodTitle{
+    text-align: center;
+}
+.authMethod.vkontakte .authMethodIcon{
+    background-image: url("../images/logo/vkontakte.png");
+}
+.authMethod.google_oauth .authMethodIcon{
+    background-image: url("../images/logo/google.png");
+}
+.authMethod.facebook .authMethodIcon{
+    background-image: url("../images/logo/facebook.png");
+}
+.authMethod.google .authMethodIcon{
+    background-image: url("../images/logo/google.png");
+}
+.authMethod.mailru .authMethodIcon{
+    background-image: url("../images/logo/mailru.png");
+}
+.authMethod.moikrug .authMethodIcon{
+    background-image: url("../images/logo/moikrug.png");
+}
+.authMethod.odnoklassniki .authMethodIcon{
+    background-image: url("../images/logo/odnoklassniki.png");
+}
+.authMethod.twitter .authMethodIcon{
+    background-image: url("../images/logo/twitter.png");
+}
+.authMethod.yandex .authMethodIcon{
+    background-image: url("../images/logo/yandex.png");
+}
+.authMethod.email .authMethodIcon{
+    background-image: url("../images/logo/email.png");
+}
+
+.authMethodSwitcherDiv{
+    display : none;
+}
+
+.authMethodIcon i{
+    width: 48px;
+    height:48px;
+    display:none;
+}
+
+.authMethodLink:hover .authMethodIcon i,
+.authMethodLink:focus .authMethodIcon i,
+.authMethod.hovered .authMethodIcon i{
+    display: block;
+    background-image: url("../images/blank.png");
+}
+
+.authMethod.selected .authMethodIcon i{
+    display: block;
+    background-image: url("../images/gray.png");
+}
+.authMethod.selected .authMethodLink{
+    color: gray;
+    cursor:default;
+}
+#loginForm .formDiv{
+    margin-top:10px;
+}
+.emailFieldsDiv fieldset{
+    padding-left:20px;
+}
+.eauthHandlers{
+    display:none;
+}

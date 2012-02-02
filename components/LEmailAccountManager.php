@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Helper class for email account managment
+ * Helper component for email account managment
  *
  * @author georgeee
  */
@@ -76,9 +76,11 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
      * @param boolean $new_account if it's registration of new user account, or just binding email to existing one
      * @param LUser $user_account if $new_account is false, here should be put model instance of the user account (for purpose of using it in mail message)
      * @param integer $error_code Reference to the variable, in which error code will be stored. It can take following values:
-     *  1 - failed to create DB record
-     *  2 - failed to send email
-     *  0 - everything is OK
+     * <ul>
+     * <li>1 - failed to create DB record</li>
+     * <li>2 - failed to send email</li>
+     * <li>0 - everything is OK</li>
+     * </ul>
      * @return mixed null if DB record was not created or Model instance of the created row, if DB insertion succeed
      */
     public function performRegistration($email, $password, $activate = null, $send_mail = null, $new_account = true, LUser $user_account = null, &$error_code = null) {
@@ -135,16 +137,16 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
      * @param boolean $new_account if it's registration of new user account, or just binding email to existing one
      * @param LUser $user_account if $new_account is false, here should be put model instance of the user account (for purpose of using it in mail message)
      * @param integer $error_code Reference to the variable, in which error code will be stored. It can take following values:
-     *  1 - failed to find code DB record
-     *  2 - activation code expired
-     *  3 - failed to create email account email record
-     *  4 - failed to send mail
-     *  0 - everything is OK
+     * <ul>
+     * <li>1 - failed to find code DB record</li>
+     * <li>2 - activation code expired</li>
+     * <li>3 - failed to create email account email record</li>
+     * <li>4 - failed to send mail</li>
+     * <li>0 - everything is OK</li>
+     * </ul>
      * @return LEmailAccount null if DB record was not created or Model instance of the created row, if DB insertion succeed
      */
     public function performActivation($code, $send_mail = true, $new_account = true, LUser $user_account = null, &$error_code = null) {
-        if (!isset($activate))
-            $activate = $this->activate;
         if (!isset($send_mail))
             $send_mail = $this->sendMail;
         if ($error_code !== null)

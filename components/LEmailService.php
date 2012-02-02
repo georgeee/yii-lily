@@ -11,28 +11,34 @@
  * @author georgeee
  */
 class LEmailService extends EAuthServiceBase implements IAuthService {
+    
+    protected $name = 'email';
+    protected $title = 'E-mail';
+    protected $type = 'email';
+    
+    public $email = '';
+    public $password = '';
 
-    public $emailPostField = 'email';
-    public $passwordPostField = 'password';
+    public function authenticate() {
+            Yii::trace ('LEmailService->autheniticate()');
+        $email = $this->email;
+        $password = $this->password;
 
-    public function autheniticate() {
-        $email = Yii::app()->request->getPost($this->emailPostField);
-        $password = Yii::app()->request->getPost($this->passwordPostField);
-
-        if (!isset($email) || !isset($password))
+        if (!isset($email) || !isset($password)){
             return false;
-        
-        $email_account = LEmailAccount::model()->findByAttributes('email=:email', array(':email' => $email));
+        }
+            Yii::trace(print_r(Yii::app()->getModule('lily'),1));
+        $email_account = LEmailAccount::model()->findByAttributes(array('email' => $email));
         if (!isset($email_account)) { //Performing the registration
             $error_code = -1;
-            LEmailAccountManager::performRegistration($email, $password, true, true, true, null, $error_code);
+            //Yii::app()->getModule('lily')->emailAccountManager->performRegistration($email, $password, null, null, true, null, $error_code);
             $this->authenticated = false;
             $flash_id = $flash_msg = '';
             if($error_code == 0){
-                $flash_msg = t('ee', 'На ваш e-mail {email} отправлено письмо с инструкциями по активации аккаунта.', array('{email}'=>$email));
+                $flash_msg = LilyModule::t('ee', 'На ваш e-mail {email} отправлено письмо с инструкциями по активации аккаунта.', array('{email}'=>$email));
                 $flash_id = 'activationMailSent';
             }else{
-                $flash_msg = t('ee', 'Произошла ошибка при регистрации {email}. Пожалуйста, проверьте введенные данный. <br \> В случае повторения ошибки, обратитесь к администрации сайта.', array('{email}'=>$email));
+                $flash_msg = LilyModule::t('ee', 'Произошла ошибка при регистрации {email}. Пожалуйста, проверьте введенные данный. <br \> В случае повторения ошибки, обратитесь к администрации сайта.', array('{email}'=>$email));
                 $flash_id = 'activationMailSendingError';
             }
             
@@ -40,6 +46,7 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
         }else{
             $password_hash = Yii::app()->hashGenerator->hash($password);
             if($password_hash == $email_account->password){
+                $this->id = $email;
                 $this->authenticated = true;
             }else{
                 $this->authenticated = false;
