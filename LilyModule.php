@@ -23,7 +23,6 @@ class LilyModule extends CWebModule {
     public $activationKeyLength = 20;
     //lowercase and uppercase latin letters, characters (excluding brackets) "-.,;=+~/\[]{}!@#$%^*&()_|" and simple whitespace
     public $passwordRegexp = '~^[a-zA-Z0-9\\-\\_\\|\\.\\,\\;\\=\\+\\~/\\\\\\[\\]\\{\\}\\!\\@\\#\\$\\%\\^\\*\\&\\(\\)\\ ]{8,32}$~';
-    
     //LEmailAccountManager configurations
     public $activate = true;
     public $sendMail = true;
@@ -32,12 +31,6 @@ class LilyModule extends CWebModule {
     public $adminEmail = 'admin@example.org';
     public $activationUrl = 'lily/email/activation';
     public $activationTimeout = 86400;
-
-    /**
-     * email account manager component instance
-     * @var LEmailAccountManager 
-     */
-    public $emailAccountManager;
 
     public function init() {
         parent::init();
@@ -48,6 +41,7 @@ class LilyModule extends CWebModule {
         $this->setComponents(
                 array(
                     'emailAccountManager' => array(
+                        'class' => 'LEmailAccountManager',
                         'activate' => $this->activate,
                         'sendMail' => $this->sendMail,
                         'informationMailView' => $this->informationMailView,
@@ -58,7 +52,14 @@ class LilyModule extends CWebModule {
                     ),
                 )
         );
-        Yii::trace("lily inited");
+    }
+
+    /**
+     * email account manager component instance
+     * @return LEmailAccountManager 
+     */
+    public function getEmailAccountManager() {
+        return $this->getComponent('emailAccountManager');
     }
 
     public function hash($str) {
@@ -85,18 +86,19 @@ class LilyModule extends CWebModule {
     public static function t($str = '', $params = array(), $dic = 'user') {
         return Yii::t("UserModule." . $dic, $str, $params);
     }
-    
-    public function getAssetsUrl(){
-	$assets_path = dirname(__FILE__).DIRECTORY_SEPARATOR.'assets';
-	return Yii::app()->assetManager->publish($assets_path, false, -1, YII_DEBUG);
+
+    public function getAssetsUrl() {
+        $assets_path = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets';
+        return Yii::app()->assetManager->publish($assets_path, false, -1, YII_DEBUG);
     }
-    
+
     public function registerCss($css) {
-        Yii::app()->getClientScript()->registerCssFile($this->getAssetsUrl()."/css/$css.css");
+        Yii::app()->getClientScript()->registerCssFile($this->getAssetsUrl() . "/css/$css.css");
     }
+
     public function registerJs($js) {
         Yii::app()->clientScript->registerCoreScript('jquery');
-        Yii::app()->getClientScript()->registerScriptFile($this->getAssetsUrl()."/js/$js.js");
+        Yii::app()->getClientScript()->registerScriptFile($this->getAssetsUrl() . "/js/$js.js");
     }
 
 }
