@@ -37,10 +37,10 @@ class LUser extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('name', 'required'),
-			array('sex', 'numerical', 'integerOnly'=>true),
-			array('name', 'length', 'max'=>255),
-			array('birthday', 'safe'),
+//			array('name', 'required'),
+//			array('sex', 'numerical', 'integerOnly'=>true),
+//			array('name', 'length', 'max'=>255),
+//			array('birthday', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
 			array('uid, name, birthday, sex', 'safe', 'on'=>'search'),
@@ -56,6 +56,7 @@ class LUser extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
                     'accounts' => array(self::HAS_MANY, 'LAccount', 'uid'),
+                    'emailActivations' => array(self::HAS_MANY, 'LAccount', 'uid'),
 		);
 	}
 

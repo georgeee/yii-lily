@@ -38,7 +38,7 @@ class LEmailAccountActivation extends CActiveRecord {
 //			array('code', 'length', 'max'=>255),
             // The following rule is used by search().
             // Please remove those attributes that should not be searched.
-            array('code_id, code, created, email, password', 'safe', 'on' => 'search'),
+            array('code_id, code, created, email, password, uid', 'safe', 'on' => 'search'),
         );
     }
 
@@ -49,7 +49,8 @@ class LEmailAccountActivation extends CActiveRecord {
         // NOTE: you may need to adjust the relation name and the related
         // class name for the relations automatically generated below.
         return array(
-        );
+                    'user' => array(self::BELONGS_TO, 'LUser', 'uid'),
+		);
     }
 
     /**
@@ -60,6 +61,7 @@ class LEmailAccountActivation extends CActiveRecord {
             'email_id' => 'Email',
             'code' => 'Code',
             'created' => 'Created',
+            'uid' => 'Uid',
         );
     }
 
@@ -88,19 +90,22 @@ class LEmailAccountActivation extends CActiveRecord {
      * by email and password
      * @param string $email
      * @param string $password
+     * @param integer $uid User id or account, null if it's new account
      * @param boolean $hash_password - whether to hash $password value 
      * or not (defaults to true)
      * @return LEmailAccountActivation 
      */
-    public static function create($email, $password, $hash_password = true) {
+    public static function create($email, $password, $uid = null, $hash_password = true) {
         if($hash_password){
             $password = Yii::app()->getModule('lily')->hash($password);
         }
+        if(isset($uid) && is_object($uid)) $uid = $uid->uid;
         $code = new LEmailAccountActivation();
         $code->code = Yii::app()->getModule('lily')->generateRandomString();
         $code->email = $email;
         $code->password = $password;
         $code->created = time();
+        $code->uid = $uid;
         return $code->save() ? $code : null;
     }
 

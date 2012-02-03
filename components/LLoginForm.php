@@ -6,6 +6,7 @@ class LLoginForm extends CFormModel {
     public $password;
     public $rememberMe;
     public $service;
+    public $id;
     
     public $services;
     

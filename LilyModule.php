@@ -23,25 +23,33 @@ class LilyModule extends CWebModule {
     public $activationKeyLength = 20;
     //lowercase and uppercase latin letters, characters (excluding brackets) "-.,;=+~/\[]{}!@#$%^*&()_|" and simple whitespace
     public $passwordRegexp = '~^[a-zA-Z0-9\\-\\_\\|\\.\\,\\;\\=\\+\\~/\\\\\\[\\]\\{\\}\\!\\@\\#\\$\\%\\^\\*\\&\\(\\)\\ ]{8,32}$~';
-    //LEmailAccountManager configurations
+    //LAccountManager configurations
     public $activate = true;
     public $sendMail = true;
     public $informationMailView = null; //'registrationFollowup';
     public $activationMailView = null; //'activationFollowup';
     public $adminEmail = 'admin@example.org';
-    public $activationUrl = 'lily/email/activation';
-    public $activationTimeout = 86400;
+    public $activationUrl = 'lily/user/activate';
+    public $activationTimeout = 86400;//24h
+    public $sessionTimeout = 604800;//Week
+    
+    /**
+     * account manager component
+     * @var LAccountManager 
+     */
+    public $accountManager;
 
     public function init() {
         parent::init();
         $this->setImport(array(
+            'lily.*',
             'lily.components.*',
             'lily.models.*',
         ));
         $this->setComponents(
                 array(
-                    'emailAccountManager' => array(
-                        'class' => 'LEmailAccountManager',
+                    'accountManager' => array(
+                        'class' => 'LAccountManager',
                         'activate' => $this->activate,
                         'sendMail' => $this->sendMail,
                         'informationMailView' => $this->informationMailView,
@@ -58,8 +66,8 @@ class LilyModule extends CWebModule {
      * email account manager component instance
      * @return LEmailAccountManager 
      */
-    public function getEmailAccountManager() {
-        return $this->getComponent('emailAccountManager');
+    public function getAccountManager() {
+        return $this->getComponent('accountManager');
     }
 
     public function hash($str) {

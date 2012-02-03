@@ -11,46 +11,58 @@
  * @author georgeee
  */
 class LEmailService extends EAuthServiceBase implements IAuthService {
-    
+
+    const ERROR_NONE = 0;
+    const ERROR_AUTH_FAILED = 1;
+    const ERROR_ACTIVATION_MAIL_SENT = 2;
+    const ERROR_ACTIVATION_MAIL_FAILED = 3;
+    const ERROR_UNRECOGNIZED = 4;
+
     protected $name = 'email';
     protected $title = 'E-mail';
     protected $type = 'email';
-    
-    public $email = '';
-    public $password = '';
+    public $email;
+    public $password;
+    public $errorCode;
 
     public function authenticate() {
-            Yii::trace ('LEmailService->autheniticate()');
         $email = $this->email;
         $password = $this->password;
+        $this->authenticated = false;
 
-        if (!isset($email) || !isset($password)){
+        if (!isset($email) || !isset($password)) {
             return false;
         }
-        $email_account = LEmailAccount::model()->findByAttributes(array('email' => $email));
-        if (!isset($email_account)) { //Performing the registration
+        $account = LAccount::model()->findByAttributes(array('service' => 'email', 'id' => $email));
+        if (!isset($account)) { //Performing the registration
             $error_code = -1;
-            Yii::app()->getModule('lily')->getEmailAccountManager()->performRegistration($email, $password, null, null, true, null, $error_code);
-            $this->authenticated = false;
-            $flash_id = $flash_msg = '';
-            if($error_code == 0){
-                $flash_msg = LilyModule::t('На ваш e-mail {email} отправлено письмо с инструкциями по активации аккаунта.', array('{email}'=>$email));
-                $flash_id = 'activationMailSent';
-            }else{
-                $flash_msg = LilyModule::t('Произошла ошибка при регистрации {email}. Пожалуйста, проверьте введенные данный. <br \> В случае повторения ошибки, обратитесь к администрации сайта.', array('{email}'=>$email));
-                $flash_id = 'activationMailSendingError';
+            $mixed = Yii::app()->getModule('lily')->getAccountManager()->performRegistration($email, $password, null, null, null, $error_code);
+            if (Yii::app()->getModule('lily')->activate) {
+                if ($error_code == 0) {
+                    $this->errorCode = self::ERROR_ACTIVATION_MAIL_SENT;
+                } else {
+                    $this->errorCode = self::ERROR_ACTIVATION_MAIL_FAILED;
+                }
+            } else {
+                if (!isset($mixed))
+                    $this->errorCode = self::ERROR_UNRECOGNIZED;
+                else {
+                    $this->errorCode = self::ERROR_NONE;
+                    $this->id = $email;
+                    $this->authenticated = true;
+                }
             }
-            
-            Yii::app()->user->setFlash($flash_id, $flash_msg);
-        }else{
-            $password_hash = Yii::app()->hashGenerator->hash($password);
-            if($password_hash == $email_account->password){
+        } else {
+            $password_hash = Yii::app()->getModule('lily')->hash($password);
+            if ($password_hash == $account->getData()->password) {
                 $this->id = $email;
                 $this->authenticated = true;
-            }else{
-                $this->authenticated = false;
+                $this->code = self::ERROR_NONE;
+            } else {
+                $this->code = self::ERROR_AUTH_FAILED;
             }
         }
+            Yii::log("LEmailService auth resulted with code $this->code.", 'info', 'lily.LEmailService.info');
         return $this->authenticated;
     }
 

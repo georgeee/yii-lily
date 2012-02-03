@@ -59,7 +59,7 @@
     background-image: url("../images/logo/email.png");
 }
 
-.authMethodSwitcherDiv{
+.eauthHandlers,.authMethodSwitcherDiv{
     display : none;
 }
 
@@ -84,12 +84,16 @@
     color: gray;
     cursor:default;
 }
-#loginForm .formDiv{
+.formDiv{
     margin-top:10px;
 }
 .emailFieldsDiv fieldset{
     padding-left:20px;
 }
-.eauthHandlers{
-    display:none;
+.rememberMeFieldDiv .authMethodRememberMe{
+    float: left;
+    margin-right: 5px;
+}
+div.form  .authForm input.submitButton{
+    margin-left: -20px;
 }

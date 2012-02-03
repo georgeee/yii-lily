@@ -28,7 +28,7 @@ class LLoginFormValidator extends CValidator {
         $v1 = ($attribute == 'email' ? CValidator::createValidator('email', $object, $attribute) : CValidator::createValidator('match', $object, $attribute, array('pattern' => Yii::app()->getModule('lily')->passwordRegexp)));
         $v2 = CValidator::createValidator('required', $object, $attribute);
 
-        return "if ( $('#loginForm .authMethodSelect').val() == 'email' ) {".$v1->clientValidateAttribute($object, $attribute)
+        return "if ( $('#$object->id .authMethodSelect').val() == 'email' ) {".$v1->clientValidateAttribute($object, $attribute)
                 .$v2->clientValidateAttribute($object, $attribute) . "}";
     }
 
