@@ -36,7 +36,7 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
         $account = LAccount::model()->findByAttributes(array('service' => 'email', 'id' => $email));
         if (!isset($account)) { //Performing the registration
             $error_code = -1;
-            $mixed = Yii::app()->getModule('lily')->getAccountManager()->performRegistration($email, $password, null, null, null, $error_code);
+            $mixed = Yii::app()->getModule('lily')->accountManager->performRegistration($email, $password, null, null, null, $error_code);
             if (Yii::app()->getModule('lily')->activate) {
                 if ($error_code == 0) {
                     $this->errorCode = self::ERROR_ACTIVATION_MAIL_SENT;
@@ -54,15 +54,16 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
             }
         } else {
             $password_hash = Yii::app()->getModule('lily')->hash($password);
-            if ($password_hash == $account->getData()->password) {
-                $this->id = $email;
+            if ($password_hash == $account->data->password) {
+                $this->attributes['id'] = $email;
                 $this->authenticated = true;
-                $this->code = self::ERROR_NONE;
+                $this->errorCode = self::ERROR_NONE;
             } else {
-                $this->code = self::ERROR_AUTH_FAILED;
+                $this->errorCode = self::ERROR_AUTH_FAILED;
+            Yii::log("LEmailService auth failed: $password_hash is not {$account->data->password}.", 'info', 'lily.LEmailService.info');
             }
         }
-            Yii::log("LEmailService auth resulted with code $this->code.", 'info', 'lily.LEmailService.info');
+            Yii::log("LEmailService auth resulted with code $this->errorCode.", 'info', 'lily.LEmailService.info');
         return $this->authenticated;
     }
 

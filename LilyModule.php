@@ -14,6 +14,7 @@
  * 
  *
  * @author georgeee
+ * @property LAccountManager $accountManager
  */
 class LilyModule extends CWebModule {
 
@@ -30,20 +31,16 @@ class LilyModule extends CWebModule {
     public $activationMailView = null; //'activationFollowup';
     public $adminEmail = 'admin@example.org';
     public $activationUrl = 'lily/user/activate';
-    public $activationTimeout = 86400;//24h
-    public $sessionTimeout = 604800;//Week
-    
-    /**
-     * account manager component
-     * @var LAccountManager 
-     */
-    public $accountManager;
+    public $activationTimeout = 86400; //24h
+    public $sessionTimeout = 604800; //Week
+    public $session = null;
 
     public function init() {
         parent::init();
         $this->setImport(array(
             'lily.*',
             'lily.components.*',
+            'lily.services.*',
             'lily.models.*',
         ));
         $this->setComponents(
@@ -60,6 +57,31 @@ class LilyModule extends CWebModule {
                     ),
                 )
         );
+        if (!Yii::app()->user->isGuest) {
+            $logout = true;
+            $sid = Yii::app()->user->getState('sid');
+            $ssid = Yii::app()->user->hasState('ssid');
+            if (isset($sid) && isset($ssid)) {
+                $session = LSession::model()->findByPk($sid);
+                if ($session->ssid == $ssid) {
+                    if ($session->created + $this->sessionTimeout >= time()) {
+                        $this->session = $session;
+                        Yii::app()->user->name = $this->session->account->user->name;
+                        $this->session->account->user->setScenario('registered');
+                        if (!isset($this->session->account->user->name)
+                                && !in_array(Yii::app()->urlManager->parseUrl(Yii::app()->getRequest()) , array('lily/user/edit', 'lily/user/logout', 'site/logout'))) {
+                            Yii::app()->user->setFlash('lily_incompleteUserData', self::t('Your user data is incomplete! Please fill in the suggested form in order to continue site exploring.'));
+                            Yii::app()->request->redirect(Yii::app()->createUrl('lily/user/edit', array('returnUrl'=> Yii::app()->request->getUrl())));
+                        }
+
+                        $logout = false;
+                    }else
+                        $session->delete();
+                }
+            }
+            if ($logout)
+                Yii::app()->user->logout();
+        }
     }
 
     /**
@@ -91,8 +113,8 @@ class LilyModule extends CWebModule {
 //        parent::init();
 //    }
 
-    public static function t($str = '', $params = array(), $dic = 'user') {
-        return Yii::t("UserModule." . $dic, $str, $params);
+    public static function t($str = '', $params = array(), $dic = 'default') {
+        return Yii::t("LilyModule." . $dic, $str, $params);
     }
 
     public function getAssetsUrl() {

@@ -28,13 +28,13 @@ class LAccountManager extends CApplicationComponent {
             $message->setBody(array('account' => $account), 'text/html');
         else
             $message->setBody(LilyModule::t('Your email was successfully registered on <a href="{siteUrl}">{siteName}</a>!', array('{siteUrl}' => Yii::app()->createAbsoluteUrl(''), '{siteName}' => Yii::app()->name)), 'text/html');
-        $message->addTo($account->email);
+        $message->addTo($account->id);
         $message->from = $this->adminEmail;
         $recipient_count = Yii::app()->mail->send($message);
         if ($recipient_count > 0)
-            Yii::log('E-mail to ' + $account->email + ' was sent.', 'info', 'lily.mail.success');
+            Yii::log('E-mail to ' + $account->id + ' was sent.', 'info', 'lily.mail.success');
         else
-            Yii::log('Failed sending e-mail to ' + $account->email + '.', 'info', 'lily.mail.fail');
+            Yii::log('Failed sending e-mail to ' + $account->id + '.', 'info', 'lily.mail.fail');
         return $recipient_count > 0;
     }
 
@@ -172,7 +172,7 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
             Yii::log("performActivation: activation code $_code expired.", 'info', 'lily.performActivation.info');
             return null;
         }
-        $account = LAccount::create('email', $code->email, (object) array('password' => Yii::app()->getModule('lily')->hash($code->password)), $code->uid);
+        $account = LAccount::create('email', $code->email, (object) array('password' =>$code->password), $code->uid);
         if (!isset($account)) {
             if ($error_code !== null)
                 $error_code = 3;

@@ -5,20 +5,26 @@
  *
  * The followings are the available columns in table '{{account}}':
  * @property integer $uid
- * @property string $service_id
- * @property string $user_id
- * @property string $service_data
+ * @property string $service
+ * @property string $id
+ * @property string $data
  * @property string $created
  */
 class LAccount extends CActiveRecord {
 
     protected $unserialized = false;
 
+    
+    public function getServiceName(){
+        $services = Yii::app()->eauth->getServices();
+        return $services[$this->service]->title;
+    }
     /**
      * Returns the static model of the specified AR class.
      * @param string $className active record class name.
      * @return LAccount the static model class
      */
+    
     public static function model($className = __CLASS__) {
         return parent::model($className);
     }
@@ -55,6 +61,7 @@ class LAccount extends CActiveRecord {
         // class name for the relations automatically generated below.
         return array(
             'user' => array(self::BELONGS_TO, 'LUser', 'uid'),
+            'sessions' => array(self::HAS_MANY, 'LSession', 'aid'),
         );
     }
 
@@ -71,24 +78,36 @@ class LAccount extends CActiveRecord {
         );
     }
 
-    public function getData() {
+    public function checkUnserialized() {
         if (!$this->unserialized) {
             $this->data = unserialize($this->data);
             $this->unserialized = true;
         }
-        return $this->data;
     }
 
-    public function setData($data) {
-        $this->data = $data;
+    public function checkSerialized() {
+        if ($this->unserialized) {
+            $this->data = serialize($this->data);
+            $this->unserialized = false;
+        }
+    }
+
+    protected function afterFind() {
+        parent::afterFind();
+        $this->checkUnserialized();
+    }
+
+    protected function afterSave() {
+        parent::afterSave();
+        $this->checkUnserialized();
     }
 
     protected function beforeSave() {
         parent::beforeSave();
-        $this->data = serialize($this->data);
-        $this->unserialized = false;
+        $this->checkSerialized();
         return true;
     }
+
 
     /**
      * Retrieves a list of models based on the current search/filter conditions.
@@ -133,7 +152,8 @@ class LAccount extends CActiveRecord {
         $account->uid = $uid;
         $account->service = $service;
         $account->id = $id;
-        $account->setData($data);
+        $account->unserialized = true;
+        $account->data =$data;
         $account->created = time();
         if ($account->save()) {
             Yii::log("LAccount::create($service, $id,..) successfully created new account aid={$account->aid}", 'info', 'lily.LAccount.success');

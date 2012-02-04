@@ -60,8 +60,11 @@ class LUserIdentity extends CBaseUserIdentity {
                 if (!isset($account)) {
                     $this->errorCode = self::ERROR_UNRECOGNIZED;
                 } else {
-                    $this->id = $session->ssid;
+                    $this->id = $account->uid;
                     $this->name = $account->user->name;
+                    $account->data = (object)array_merge((array)$account->data, (array)$session->data);
+                    $this->setState('ssid', $session->ssid);
+                    $this->setState('sid', $session->sid);
                     $this->errorCode = self::ERROR_NONE;
                 }
             }
