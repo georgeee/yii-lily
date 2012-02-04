@@ -172,7 +172,7 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
             Yii::log("performActivation: activation code $_code expired.", 'info', 'lily.performActivation.info');
             return null;
         }
-        $account = LAccount::create('email', $code->email, (object) array('password' =>$code->password), $code->uid);
+        $account = LAccount::create('email', $code->email, (object) array('password' => $code->password), $code->uid);
         if (!isset($account)) {
             if ($error_code !== null)
                 $error_code = 3;
@@ -189,6 +189,24 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
             }
         }
         return $account;
+    }
+
+    public function merge($with_uid, $uid = null) {
+        if (!isset($with_uid))
+            return false;
+        if (is_object($with_uid))
+            $with_uid = $with_uid->uid;
+
+        if (!isset($uid))
+            $uid = Yii::app()->getModule('lily')->user;
+        if (!isset($uid))
+            return false;
+        if (!is_object($uid))
+            $uid = LUser::model()->findByPk($uid);
+
+        if (!$uid->appendAccountsFromUid($with_uid))
+            return false;
+        return LUser::model()->findByPk($with_uid)->delete();
     }
 
 }

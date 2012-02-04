@@ -31,6 +31,8 @@ class LUserIdentity extends CBaseUserIdentity {
      * @var string the display name for the identity.
      */
     protected $name;
+    public $user = null;
+    public $session = null, $account = null;
 
     /**
      * Constructor.
@@ -49,29 +51,28 @@ class LUserIdentity extends CBaseUserIdentity {
         if ($this->service->isAuthenticated) {
             $id = $this->service->id;
             $service = $this->service->serviceName;
-            $account = LAccount::model()->findByAttributes(array('id' => $id, 'service' => $service));
+            $this->account = LAccount::model()->findByAttributes(array('id' => $id, 'service' => $service));
             Yii::log("LUserIdentity launched with service=$service, id=$id", 'info', 'lily.LUserIdentity.info');
-            if (!isset($account))
-                $account = LAccount::create($service, $id);
-            if (!isset($account)) {
+            if (!isset($this->account))
+                $this->account = LAccount::create($service, $id, null, $this->user);
+            if (!isset($this->account)) {
                 $this->errorCode = self::ERROR_UNRECOGNIZED;
             } else {
-                $session = LSession::create($account, (object) $this->service->getAttributes());
-                if (!isset($account)) {
+                if (!isset($this->user))
+                    $this->session = LSession::create($this->account, (object) $this->service->getAttributes());
+                if (!isset($this->user) && !isset($this->session)) {
                     $this->errorCode = self::ERROR_UNRECOGNIZED;
                 } else {
-                    $this->id = $account->uid;
-                    $this->name = $account->user->name;
+                    $this->id = $this->account->uid;
+                    $this->name = $this->account->user->name;
 
-                    $msg = "Account object:\n" .print_r($account->data, 1)."Session object:\n".print_r($session->data, 1)
-                            ."Result object:\n".print_r((object)array_merge((array)$account->data, (array)$session->data), 1);
-                    Yii::log($msg,'info','lily.LUserIdentity.authenticate');
-                    
-                    $account->data = (object)array_merge((array)$account->data, (array)$session->data);
-                    $account->save();
-                    
-                    $this->setState('ssid', $session->ssid);
-                    $this->setState('sid', $session->sid);
+                    $this->account->data = (object) array_merge((array) $this->account->data, $this->service->getAttributes());
+                    $this->account->save();
+
+                    if (!isset($this->user)) {
+                        $this->setState('ssid', $this->session->ssid);
+                        $this->setState('sid', $this->session->sid);
+                    }
                     $this->errorCode = self::ERROR_NONE;
                 }
             }

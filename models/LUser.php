@@ -10,7 +10,26 @@
  * @property integer $sex
  */
 class LUser extends CActiveRecord {
-
+    
+    public function getNameId(){
+        $result = '';
+        if(isset($this->name)){
+            $result .= $this->name;
+        }else{
+            $result .= '<'.LilyModule::t('Name not set').'>';
+        }
+        $result .= ' (';
+        $result .= $this->getAttributeLabel('id');
+        $result .= ' ';
+        if(isset($this->uid)){
+            $result .= $this->uid;
+        }else{
+            $result .= '<'.LilyModule::t('User id not set').'>';
+        }
+        $result .= ')';
+        return $result;
+    }
+    
     public $pattern = 'yyyy-MM-dd';
     public $_sex_options = null;
 
@@ -44,7 +63,7 @@ class LUser extends CActiveRecord {
         else
             $this->birthday = Yii::app()->dateFormatter->format($this->pattern, $timestamp);
     }
-
+    
     /**
      * Returns the static model of the specified AR class.
      * @param string $className active record class name.
@@ -90,7 +109,21 @@ class LUser extends CActiveRecord {
             'emailActivations' => array(self::HAS_MANY, 'LAccount', 'uid'),
         );
     }
-
+    
+    //TODO What will happen if id==null
+    public function getAccountIds($uid = null){
+        if(!isset($uid)) $uid = $this->uid;
+//        LAccount::model()->
+        $ids = $this->getDbConnection()->createCommand()->select('aid')->from(LAccount::model()->tableName())->where('uid=:uid', array(':uid'=> $this->uid))->queryColumn();
+        return $ids;
+    }
+    
+    public function appendAccountsFromUid($uid){
+        $count = count($this->getAccountIds($uid));
+        $affected = $this->getDbConnection()->createCommand()->update(LAccount::model()->tableName(), array('uid'=>$this->uid),'uid=:oid', array(':oid'=>$uid));
+        return $count==$affected;
+    }
+    
     /**
      * @return array customized attribute labels (name=>label)
      */

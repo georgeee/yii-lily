@@ -21,7 +21,7 @@ class LilyModule extends CWebModule {
     //General configurations
     public $hashFunction = 'md5';
     public $hashSalt = "ePGFxh7JeNL1AlaWCDfv";
-    public $activationKeyLength = 20;
+    public $randomKeyLength = 20;
     //lowercase and uppercase latin letters, characters (excluding brackets) "-.,;=+~/\[]{}!@#$%^*&()_|" and simple whitespace
     public $passwordRegexp = '~^[a-zA-Z0-9\\-\\_\\|\\.\\,\\;\\=\\+\\~/\\\\\\[\\]\\{\\}\\!\\@\\#\\$\\%\\^\\*\\&\\(\\)\\ ]{8,32}$~';
     //LAccountManager configurations
@@ -33,7 +33,25 @@ class LilyModule extends CWebModule {
     public $activationUrl = 'lily/user/activate';
     public $activationTimeout = 86400; //24h
     public $sessionTimeout = 604800; //Week
-    public $session = null;
+    public $_session = null;
+    
+    public $enableUserMerge = true;
+
+    public function getSession() {
+        return $this->_session;
+    }
+
+    public function getAccount() {
+        return isset($this->_session->account) ? $this->_session->account : null;
+    }
+
+    public function getUser() {
+        return isset($this->_session->account->user) ? $this->_session->account->user : null;
+    }
+
+    public function getSessionData() {
+        return isset($this->_session->data) ? $this->_session->data : new stdClass;
+    }
 
     public function init() {
         parent::init();
@@ -65,13 +83,13 @@ class LilyModule extends CWebModule {
                 $session = LSession::model()->findByPk($sid);
                 if (isset($session) && $session->ssid == $ssid) {
                     if ($session->created + $this->sessionTimeout >= time()) {
-                        $this->session = $session;
-                        Yii::app()->user->name = $this->session->account->user->name;
-                        $this->session->account->user->setScenario('registered');
-                        if (!isset($this->session->account->user->name)
-                                && !in_array(Yii::app()->urlManager->parseUrl(Yii::app()->getRequest()) , array('lily/user/edit', 'lily/user/logout', 'site/logout'))) {
+                        $this->_session = $session;
+                        Yii::app()->user->name = $this->_session->account->user->name;
+                        $this->_session->account->user->setScenario('registered');
+                        if (!isset($this->_session->account->user->name)
+                                && !in_array(Yii::app()->urlManager->parseUrl(Yii::app()->getRequest()), array('lily/user/edit', 'lily/user/logout', 'site/logout'))) {
                             Yii::app()->user->setFlash('lily_incompleteUserData', self::t('Your user data is incomplete! Please fill in the suggested form in order to continue site exploring.'));
-                            Yii::app()->request->redirect(Yii::app()->createUrl('lily/user/edit', array('returnUrl'=> Yii::app()->request->getUrl())));
+                            Yii::app()->request->redirect(Yii::app()->createUrl('lily/user/edit', array('returnUrl' => Yii::app()->request->getUrl())));
                         }
 
                         $logout = false;
@@ -99,7 +117,7 @@ class LilyModule extends CWebModule {
 
     public function generateRandomString($length = -1) {
         if ($length == -1)
-            $length = $this->activationKeyLength;
+            $length = $this->randomKeyLength;
         $result = '';
         $possible_chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $pc_length = strlen($possible_chars);

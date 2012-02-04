@@ -70,13 +70,11 @@
                 </div>
             </div>
         <?php } ?>
-        <?php if($showRememberMe){ ?>
-        <div class="row rememberMeFieldDiv">
+        <div class="row rememberMeFieldDiv" <?php if(!$showRememberMe){ ?>style="display:none;"<?php } ?>>
             <?php echo $form->checkBox($model, 'rememberMe', array('class' => 'authMethodRememberMe')); ?>
-            <?php echo $form->label($model, 'rememberMe'); ?>
+            <?php echo $form->label($model, 'rememberMe', array('class' => 'authMethodRememberMeLabel')); ?>
             <?php echo $form->error($model, 'rememberMe'); ?>
         </div>
-        <?php } ?>
         <div class="row buttons">
             <?php echo CHtml::submitButton($submitLabel, array('class'=>'submitButton')); ?>
         </div>

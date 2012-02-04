@@ -62,7 +62,7 @@ class UserController extends Controller {
                     $authIdentity->cancel();
                 }
             }
-
+            $authIdentity->cancel();
             // авторизация не удалась, перенаправляем на страницу входа
             //$this->redirect(array('user/login'));
             // display the login form

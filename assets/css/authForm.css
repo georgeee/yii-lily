@@ -90,10 +90,6 @@
 .emailFieldsDiv fieldset{
     padding-left:20px;
 }
-.rememberMeFieldDiv .authMethodRememberMe{
-    float: left;
-    margin-right: 5px;
-}
-div.form  .authForm input.submitButton{
-    margin-left: -20px;
+div.form label.authMethodRememberMeLabel{
+    display: inline;
 }
