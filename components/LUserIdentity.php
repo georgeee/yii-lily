@@ -62,7 +62,14 @@ class LUserIdentity extends CBaseUserIdentity {
                 } else {
                     $this->id = $account->uid;
                     $this->name = $account->user->name;
+
+                    $msg = "Account object:\n" .print_r($account->data, 1)."Session object:\n".print_r($session->data, 1)
+                            ."Result object:\n".print_r((object)array_merge((array)$account->data, (array)$session->data), 1);
+                    Yii::log($msg,'info','lily.LUserIdentity.authenticate');
+                    
                     $account->data = (object)array_merge((array)$account->data, (array)$session->data);
+                    $account->save();
+                    
                     $this->setState('ssid', $session->ssid);
                     $this->setState('sid', $session->sid);
                     $this->errorCode = self::ERROR_NONE;

@@ -13,7 +13,11 @@
 class LAccount extends CActiveRecord {
 
     protected $unserialized = false;
-
+    
+    public function getDisplayId(){
+        if(isset($this->data->displayId)) return $this->data->displayId;
+        else return $this->id;
+    }
     
     public function getServiceName(){
         $services = Yii::app()->eauth->getServices();

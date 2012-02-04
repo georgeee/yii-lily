@@ -48,7 +48,7 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
                     $this->errorCode = self::ERROR_UNRECOGNIZED;
                 else {
                     $this->errorCode = self::ERROR_NONE;
-                    $this->id = $email;
+                    $this->attributes['displayId'] = $this->id = $email;
                     $this->authenticated = true;
                 }
             }

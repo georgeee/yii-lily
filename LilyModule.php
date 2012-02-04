@@ -63,7 +63,7 @@ class LilyModule extends CWebModule {
             $ssid = Yii::app()->user->hasState('ssid');
             if (isset($sid) && isset($ssid)) {
                 $session = LSession::model()->findByPk($sid);
-                if ($session->ssid == $ssid) {
+                if (isset($session) && $session->ssid == $ssid) {
                     if ($session->created + $this->sessionTimeout >= time()) {
                         $this->session = $session;
                         Yii::app()->user->name = $this->session->account->user->name;

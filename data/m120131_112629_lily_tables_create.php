@@ -15,7 +15,7 @@ class m120131_112629_lily_tables_create extends CDbMigration {
             'service' => 'string NOT NULL',
             'id' => 'string NOT NULL',
             'data' => 'binary',
-            'created' => 'timestamp',
+            'created' => 'integer',
         ), 'ENGINE=InnoDB');
         $this->createTable('{{lily_email_account_activation}}', array(
             'code_id' => 'pk',

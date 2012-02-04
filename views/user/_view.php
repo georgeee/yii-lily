@@ -28,7 +28,10 @@ $this->widget('zii.widgets.CDetailView', array(
                         'name' => 'service',
                         'value' => '$data->serviceName',
                     ),
-                    'id',
+                    array(
+                        'name' => 'id',
+                        'value' => '$data->displayId',
+                    ),
                     array(
                         'name' => 'created',
                         'value' => 'Yii::app()->dateFormatter->formatDateTime($data->created)',
