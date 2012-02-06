@@ -97,11 +97,11 @@ class LEmailAccountActivation extends CActiveRecord {
      */
     public static function create($email, $password, $uid = null, $hash_password = true) {
         if($hash_password){
-            $password = Yii::app()->getModule('lily')->hash($password);
+            $password = LilyModule::instance()->hash($password);
         }
         if(isset($uid) && is_object($uid)) $uid = $uid->uid;
         $code = new LEmailAccountActivation();
-        $code->code = Yii::app()->getModule('lily')->generateRandomString();
+        $code->code = LilyModule::instance()->generateRandomString();
         $code->email = $email;
         $code->password = $password;
         $code->created = time();

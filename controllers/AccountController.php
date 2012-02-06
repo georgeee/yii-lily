@@ -83,7 +83,7 @@ class AccountController extends Controller {
             $authIdentity = Yii::app()->eauth->getIdentity($model->service);
             $authIdentity->redirectUrl = Yii::app()->user->returnUrl;
             $authIdentity->cancelUrl = $this->createAbsoluteUrl('account/bind');
-            $user = Yii::app()->getModule('lily')->user;
+            $user = LilyModule::instance()->user;
             $aids = $user->accountIds;
             if ($model->service == 'email') {
                 $authIdentity->email = $model->email;
@@ -102,12 +102,12 @@ class AccountController extends Controller {
                             Yii::app()->user->setFlash('lily.account.bind.already', LilyModule::t('Account is already binded to current user.'));
                         $authIdentity->redirect();
                     } else {
-                        if (Yii::app()->getModule('lily')->enableUserMerge) {
-                            $merge_id = Yii::app()->getModule('lily')->generateRandomString();
-                            if (!isset(Yii::app()->getModule('lily')->sessionData->merge))
-                                Yii::app()->getModule('lily')->sessionData->merge = array();
-                            Yii::app()->getModule('lily')->sessionData->merge[$merge_id] = $identity->account->uid;
-                            Yii::app()->getModule('lily')->session->save();
+                        if (LilyModule::instance()->enableUserMerge) {
+                            $merge_id = LilyModule::instance()->generateRandomString();
+                            if (!isset(LilyModule::instance()->sessionData->merge))
+                                LilyModule::instance()->sessionData->merge = array();
+                            LilyModule::instance()->sessionData->merge[$merge_id] = $identity->account->uid;
+                            LilyModule::instance()->session->save();
                             Yii::app()->user->setFlash('lily.account.merge', LilyModule::t('You\'ve tried to bind an account, that\'s already binded to {user}.', array('{user}' => CHtml::link($identity->account->user->nameId, $this->createUrl('user/view', array('uid' => $identity->account->uid))))));
 
                             $authIdentity->redirect($this->createUrl('account/merge', array('merge_id' => $merge_id)));
@@ -132,12 +132,12 @@ class AccountController extends Controller {
 
     public function actionMerge() {
         $merge_id = Yii::app()->request->getQuery('merge_id');
-        if (!isset($merge_id) || !isset(Yii::app()->getModule('lily')->sessionData->merge[$merge_id]))
+        if (!isset($merge_id) || !isset(LilyModule::instance()->sessionData->merge[$merge_id]))
             throw new CHttpException(404, Yii::t('lily.account.merge', 'Incorrect merge id specified!'));
         $accept = Yii::app()->request->getPost('accept');
         if (isset($accept)) {
-            $result = Yii::app()->getModule('lily')->accountManager->merge(Yii::app()->getModule('lily')->sessionData->merge[$merge_id]);
-            unset(Yii::app()->getModule('lily')->sessionData->merge[$merge_id]);
+            $result = LilyModule::instance()->accountManager->merge(LilyModule::instance()->sessionData->merge[$merge_id]);
+            unset(LilyModule::instance()->sessionData->merge[$merge_id]);
             if ($result)
                 $this->redirect('list');
             else {
@@ -145,7 +145,7 @@ class AccountController extends Controller {
                 $this->redirect('bind');
             }
         }
-        $this->render('merge', array('user' => LUser::model()->findByPk(Yii::app()->getModule('lily')->sessionData->merge[$merge_id])));
+        $this->render('merge', array('user' => LUser::model()->findByPk(LilyModule::instance()->sessionData->merge[$merge_id])));
     }
 
     public function actionList() {

@@ -1,5 +1,5 @@
 <?php
-Yii::app()->getModule('lily')->registerCss('authForm');
+LilyModule::instance()->registerCss('authForm');
 ?>
 <div id="accountList">
 <?php $this->widget('zii.widgets.CListView', array(

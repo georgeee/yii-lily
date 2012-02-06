@@ -66,8 +66,8 @@ class LAuthWidget extends CWidget {
     }
 
     public function registerAssets() {
-        Yii::app()->getModule('lily')->registerCss('authForm');
-        Yii::app()->getModule('lily')->registerJs('authForm');
+        LilyModule::instance()->registerCss('authForm');
+        LilyModule::instance()->registerJs('authForm');
         $_services = $this->services;
         unset($_services['email']);
         //We have to run EAuthWidget to make it register it's assets

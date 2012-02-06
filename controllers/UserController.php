@@ -79,7 +79,7 @@ class UserController extends Controller {
                 $identity = new LUserIdentity($authIdentity);
                 // успешная авторизация
                 if ($identity->authenticate()) {
-                    Yii::app()->user->login($identity, $model->rememberMe ? Yii::app()->getModule('lily')->sessionTimeout : 0);
+                    Yii::app()->user->login($identity, $model->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
 
                     // специальное перенаправления для корректного закрытия всплывающего окна
                     $authIdentity->redirect();
@@ -98,8 +98,8 @@ class UserController extends Controller {
 
     public function actionActivate() {
         $code = Yii::app()->getRequest()->getParam('code');
-        $model = Yii::app()->getModule('lily')->accountManager->performActivation($code);
-        $this->render('activate', array('code' => $model, 'errorCode' => Yii::app()->getModule('lily')->accountManager->errorCode));
+        $model = LilyModule::instance()->accountManager->performActivation($code);
+        $this->render('activate', array('code' => $model, 'errorCode' => LilyModule::instance()->accountManager->errorCode));
     }
 
     public function actionEdit() {
@@ -111,8 +111,8 @@ class UserController extends Controller {
             Yii::app()->end();
         }
         foreach (array('name', 'sex', 'birthday') as $param)
-            if (!isset($model->$param) && isset(Yii::app()->getModule('lily')->session->data->$param))
-                $model->$param = Yii::app()->getModule('lily')->session->data->$param;
+            if (!isset($model->$param) && isset(LilyModule::instance()->session->data->$param))
+                $model->$param = LilyModule::instance()->session->data->$param;
         if (isset($_POST['LUser'])) {
             $model->attributes = $_POST['LUser'];
             if ($model->validate()) {

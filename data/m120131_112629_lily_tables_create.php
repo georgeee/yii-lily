@@ -5,9 +5,9 @@ class m120131_112629_lily_tables_create extends CDbMigration {
     public function up() {
         $this->createTable('{{lily_user}}', array(
             'uid' => 'pk',
-            'name' => 'string',
-            'birthday' => 'date',
-            'sex' => 'boolean'
+            'deleted' => 'integer',
+            'active' => 'boolean',
+            'inited' => 'boolean',
         ), 'ENGINE=InnoDB');
         $this->createTable('{{lily_account}}', array(
             'aid' => 'pk',

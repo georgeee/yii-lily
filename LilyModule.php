@@ -15,6 +15,7 @@
  *
  * @author georgeee
  * @property LAccountManager $accountManager
+ * @property LilyModule $instance
  */
 class LilyModule extends CWebModule {
 
@@ -25,9 +26,27 @@ class LilyModule extends CWebModule {
     //lowercase and uppercase latin letters, characters (excluding brackets) "-.,;=+~/\[]{}!@#$%^*&()_|" and simple whitespace
     public $passwordRegexp = '~^[a-zA-Z0-9\\-\\_\\|\\.\\,\\;\\=\\+\\~/\\\\\\[\\]\\{\\}\\!\\@\\#\\$\\%\\^\\*\\&\\(\\)\\ ]{8,32}$~';
     public $sessionTimeout = 604800; //Week
-    public $_session = null;
     public $enableUserMerge = true;
-
+    public $relations = array();
+    public $userNameFunction = null;
+    
+    public $_session = null;
+    
+    protected static $_instance;
+    public static function instance(){
+        return self::$_instance;
+    }
+    
+    public function onUserMerge($event){
+        $this->raiseEvent('onUserMerge', $event);
+    }
+    public function onAfterLilyLoad($event){
+        $this->raiseEvent('onAfterLilyLoad', $event);
+    }
+    public function onBeforeLilyLoad($event){
+        $this->raiseEvent('onBeforeLilyLoad', $event);
+    }
+    
     public function getSession() {
         return $this->_session;
     }
@@ -46,6 +65,7 @@ class LilyModule extends CWebModule {
 
     public function init() {
         parent::init();
+        self::$_instance = $this;
         $this->setImport(array(
             'lily.*',
             'lily.components.*',
@@ -62,7 +82,7 @@ class LilyModule extends CWebModule {
                 if (isset($session) && $session->ssid == $ssid) {
                     if ($session->created + $this->sessionTimeout >= time()) {
                         $this->_session = $session;
-                        Yii::app()->user->name = $this->_session->account->user->name;
+                        Yii::app()->user->name = $this->_session->account->user->getName($this->userNameFunction);
                         $this->_session->account->user->setScenario('registered');
                         if (!isset($this->_session->account->user->name)
                                 && !in_array(Yii::app()->urlManager->parseUrl(Yii::app()->getRequest()), array('lily/user/edit', 'lily/user/logout', 'site/logout'))) {

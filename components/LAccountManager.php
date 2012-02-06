@@ -181,7 +181,7 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
             $send_mail = $this->sendMail;
 
         if (!$activate) {
-            $account = LAccount::create('email', $email, (object) array('password' => Yii::app()->getModule('lily')->hash($password)), $user_account);
+            $account = LAccount::create('email', $email, (object) array('password' => LilyModule::instance()->hash($password)), $user_account);
             if (isset($account)) {
                 if ($send_mail) {
                     $result = self::sendInformationMail($account);
@@ -301,7 +301,7 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
             $with_uid = $with_uid->uid;
 
         if (!isset($uid))
-            $uid = Yii::app()->getModule('lily')->user;
+            $uid = LilyModule::instance()->user;
         if (!isset($uid))
             throw new LException("Both uids on merging must be set!");
         if (!is_object($uid))

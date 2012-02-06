@@ -11,18 +11,12 @@
  * @author georgeee
  */
 class LilyModuleLoader extends CApplicationComponent implements IApplicationComponent {
-
+    
+    public $module = 'lily';
+    
     public function init() {
         parent::init();
-        Yii::app()->setModules(
-                array(
-                    'lily' => array(
-                        'class' => 'lily.LilyModule',
-                        'defaultController' => 'user',
-                    ),
-                )
-        );
-        Yii::app()->getModule('lily');
+        Yii::app()->getModule($this->module);
     }
 
 }

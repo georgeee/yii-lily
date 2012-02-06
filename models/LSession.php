@@ -134,7 +134,7 @@ class LSession extends CActiveRecord {
         $session->created = time();
         $session->unserialized = true;
         $session->data = $data;
-        $session->ssid = Yii::app()->getModule('lily')->generateRandomString();
+        $session->ssid = LilyModule::instance()->generateRandomString();
         return $session->save() ? $session : null;
     }
 
