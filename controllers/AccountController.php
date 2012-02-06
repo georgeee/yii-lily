@@ -12,8 +12,47 @@
  */
 class AccountController extends Controller {
 
+    public function filters() {
+        return array(
+            'accessControl',
+        );
+    }
+
+    public function accessRules() {
+        return array(
+            array('allow',
+                'actions' => array('bind', 'merge', 'index'),
+                'users' => array('@'),
+            ),
+            
+            array('allow',
+                'actions' => array('list'),
+                'expression' => function($user, $rule) {
+                    $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
+                    return $uid == $user->id;
+                },
+                'users' => array('@'),
+            ),
+            array('allow',
+                'actions' => array('delete'),
+                'expression' => function($user, $rule) {
+                    $aid = Yii::app()->request->getParam('aid');
+                    if($aid==null) return false;
+                    return LAccount::model()->findByPk($aid)->uid == $user->id;
+                },
+            ),
+            array('allow',
+                'actions' => array('list', 'delete', 'index'),
+                'roles' => array('admin'),
+            ),
+            array('deny',
+                'actions' => array('bind', 'delete', 'index', 'list', 'merge'),
+            ),
+        );
+    }
+
     public function actionIndex() {
-        $this->actionView();
+        $this->redirect($this->createUrl('list'));
     }
 
     public function actionBind() {
@@ -110,22 +149,33 @@ class AccountController extends Controller {
     }
 
     public function actionList() {
-        $dataProvider = new CActiveDataProvider('LUser', array(
+        $uid = Yii::app()->request->getQuery('uid', Yii::app()->user->id);
+        $dataProvider = new CActiveDataProvider('LAccount', array(
                     'criteria' => array(
+                        'condition' => 'uid=:uid',
+                        'params' => array(':uid' => $uid),
                         'order' => 'uid ASC',
                     ),
                     'pagination' => array(
                         'pageSize' => 20,
                     ),
                 ));
-        $this->render('list', array('dataProvider' => $dataProvider));
+        $this->render('list', array('accountProvider' => $dataProvider, 'user' => LUser::model()->findByPk($uid)));
     }
 
-    public function actionView() {
-        $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
-        $model = LUser::model()->findByPk($uid);
-        $model->setScenario('registered');
-        $this->render('view', array('user' => $model));
+    public function actionDelete() {
+        $aid = Yii::app()->request->getQuery('aid');
+        if (!isset($aid))
+            throw new CHttpException(404, Yii::t('lily.account.delete', 'Account id not specified!'));
+        $account = LAccount::model()->findByPk($aid);
+        if (!isset($account))
+            throw new CHttpException(404, Yii::t('lily.account.delete', 'Incorrect account id specified!'));
+        $accept = Yii::app()->request->getPost('accept');
+        if (isset($accept)) {
+            $account->delete();
+            $this->redirect('list');
+        }
+        $this->render('delete', array('account' => $account));
     }
 
 }

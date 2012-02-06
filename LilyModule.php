@@ -24,17 +24,8 @@ class LilyModule extends CWebModule {
     public $randomKeyLength = 20;
     //lowercase and uppercase latin letters, characters (excluding brackets) "-.,;=+~/\[]{}!@#$%^*&()_|" and simple whitespace
     public $passwordRegexp = '~^[a-zA-Z0-9\\-\\_\\|\\.\\,\\;\\=\\+\\~/\\\\\\[\\]\\{\\}\\!\\@\\#\\$\\%\\^\\*\\&\\(\\)\\ ]{8,32}$~';
-    //LAccountManager configurations
-    public $activate = true;
-    public $sendMail = true;
-    public $informationMailView = null; //'registrationFollowup';
-    public $activationMailView = null; //'activationFollowup';
-    public $adminEmail = 'admin@example.org';
-    public $activationUrl = 'lily/user/activate';
-    public $activationTimeout = 86400; //24h
     public $sessionTimeout = 604800; //Week
     public $_session = null;
-    
     public $enableUserMerge = true;
 
     public function getSession() {
@@ -61,20 +52,7 @@ class LilyModule extends CWebModule {
             'lily.services.*',
             'lily.models.*',
         ));
-        $this->setComponents(
-                array(
-                    'accountManager' => array(
-                        'class' => 'LAccountManager',
-                        'activate' => $this->activate,
-                        'sendMail' => $this->sendMail,
-                        'informationMailView' => $this->informationMailView,
-                        'activationMailView' => $this->activationMailView,
-                        'adminEmail' => $this->adminEmail,
-                        'activationUrl' => $this->activationUrl,
-                        'activationTimeout' => $this->activationTimeout,
-                    ),
-                )
-        );
+        if(!$this->hasComponent('accountManager')) $this->accountManager = array();
         if (!Yii::app()->user->isGuest) {
             $logout = true;
             $sid = Yii::app()->user->getState('sid');
@@ -100,6 +78,15 @@ class LilyModule extends CWebModule {
             if ($logout)
                 Yii::app()->user->logout();
         }
+    }
+
+    public function setAccountManager($settings) {
+
+        $this->setComponents(
+                array(
+                    'accountManager' => array_merge(array('class' => 'LAccountManager'), $settings),
+                )
+        );
     }
 
     /**

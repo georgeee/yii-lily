@@ -15,10 +15,28 @@
     overflow:auto;
     clear:both;
 }
-.authMethod{
+.authForm .authMethod{
     margin: 0 3px 0 0;
     width: 60px;
     float:left;
+}
+#accountList{
+    width: 500px;
+    float: right;
+}
+#accountList .authMethodIcon{
+    margin-right: 20px;
+}
+#accountList .authMethod{
+    height: 48px;
+    margin-bottom: 10px;
+}
+#accountList .authMethodIcon, #accountList .authMethodDesc{
+    float:left;  
+}
+#accountList .authMethodDesc{
+    font-size: 16px;
+    line-height: 48px;
 }
 .authMethodIcon{
     width: 48px;
@@ -27,6 +45,16 @@
 }
 .authMethodTitle{
     text-align: center;
+}
+.authMethodDelete{
+    float: right;
+    width: 19px;
+    height: 19px;
+    margin: 7px 7px 0 0;
+    padding: 0;
+    border: none;
+    background: url("../images/close.png") 0 0 no-repeat;
+
 }
 .authMethod.vkontakte .authMethodIcon{
     background-image: url("../images/logo/vkontakte.png");

@@ -2,16 +2,17 @@
 
 $this->widget('zii.widgets.CDetailView', array(
     'data' => $data,
+    'itemCssClass' => array(),
     'attributes' => array(
-        'uid', // title attribute (in plain text)
-        'name', // an attribute of the related object "owner"
-        'birthday', // description attribute in HTML
+        'uid',
+        'name',
+        'birthday',
         array(
             'label' => $data->getAttributeLabel('sex'),
             'type' => 'text',
             'value' => $data->sexOption,
-        ), // description attribute in HTML
-        array(// related city displayed as a link
+        ),
+        array(
             'label' => LilyModule::t('Accounts'),
             'type' => 'raw',
             'value' => $this->widget('zii.widgets.grid.CGridView', array(

@@ -27,7 +27,7 @@ switch ($errorCode) {
         <?php
         break;
 }
-if (Yii::app()->getModule('lily')->sendMail) {
+if (Yii::app()->getModule('lily')->accountManager->sendMail) {
     if ($errorCode == 0) {
         ?>
         An email with account details was sent to your email.

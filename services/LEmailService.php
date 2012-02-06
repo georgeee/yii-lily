@@ -37,10 +37,9 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
         }
         $account = LAccount::model()->findByAttributes(array('service' => 'email', 'id' => $email));
         if (!isset($account)) { //Performing the registration
-            $error_code = -1;
-            $mixed = Yii::app()->getModule('lily')->accountManager->performRegistration($email, $password, null, null, $this->user, $error_code);
-            if (Yii::app()->getModule('lily')->activate) {
-                if ($error_code == 0) {
+            $mixed = Yii::app()->getModule('lily')->accountManager->performRegistration($email, $password, null, null, $this->user);
+            if (Yii::app()->getModule('lily')->accountManager->activate) {
+                if (Yii::app()->getModule('lily')->accountManager->error_code == 0) {
                     $this->errorCode = self::ERROR_ACTIVATION_MAIL_SENT;
                 } else {
                     $this->errorCode = self::ERROR_ACTIVATION_MAIL_FAILED;
@@ -68,7 +67,9 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
             Yii::log("LEmailService auth resulted with code $this->errorCode.", 'info', 'lily.LEmailService.info');
         return $this->authenticated;
     }
-
+    protected function fetchAttributes() {
+        parent::fetchAttributes();
+    }
 }
 
 ?>

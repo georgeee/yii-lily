@@ -12,8 +12,34 @@
  */
 class UserController extends Controller {
 
+    public function filters() {
+        return array(
+            'accessControl',
+        );
+    }
+
+    public function accessRules() {
+        return array(
+            array('allow',
+                'actions' => array('edit', 'view', 'index'),
+                'expression' => function($user, $rule) {
+                    $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
+                    return $uid == $user->id;
+                },
+                'users' => array('@'),
+            ),
+            array('allow',
+                'actions' => array('edit', 'view', 'index', 'list'),
+                'roles' => array('admin'),
+            ),
+            array('deny',
+                'actions' => array('list', 'edit', 'view', 'index'),
+            ),
+        );
+    }
+
     public function actionIndex() {
-        $this->actionView();
+        $this->redirect($this->createUrl('view'));
     }
 
 //TODO normal behaviour after auth
@@ -72,9 +98,8 @@ class UserController extends Controller {
 
     public function actionActivate() {
         $code = Yii::app()->getRequest()->getParam('code');
-        $errorCode = -1;
-        $model = Yii::app()->getModule('lily')->accountManager->performActivation($code, null, $errorCode);
-        $this->render('activate', array('code' => $model, 'errorCode' => $errorCode));
+        $model = Yii::app()->getModule('lily')->accountManager->performActivation($code);
+        $this->render('activate', array('code' => $model, 'errorCode' => Yii::app()->getModule('lily')->accountManager->errorCode));
     }
 
     public function actionEdit() {

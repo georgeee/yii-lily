@@ -30,6 +30,10 @@ class LUser extends CActiveRecord {
         return $result;
     }
     
+    public function getId(){
+        return $this->uid;
+    }
+    
     public $pattern = 'yyyy-MM-dd';
     public $_sex_options = null;
 
@@ -118,7 +122,7 @@ class LUser extends CActiveRecord {
         return $ids;
     }
     
-    public function appendAccountsFromUid($uid){
+    public function appendUid($uid){
         $count = count($this->getAccountIds($uid));
         $affected = $this->getDbConnection()->createCommand()->update(LAccount::model()->tableName(), array('uid'=>$this->uid),'uid=:oid', array(':oid'=>$uid));
         return $count==$affected;
