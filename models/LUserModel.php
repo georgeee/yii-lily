@@ -10,8 +10,12 @@
  *
  * @author georgeee
  */
-class LUserModel {
-    //put your code here
+class LUserModel extends CActiveRecord{
+    
+    public function onUserMerge($event){
+        $this->raiseEvent('onUserMerge', $event);
+    }
+    
 }
 
 ?>

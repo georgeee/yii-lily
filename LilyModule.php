@@ -72,6 +72,7 @@ class LilyModule extends CWebModule {
             'lily.services.*',
             'lily.models.*',
         ));
+        $this->onBeforeLilyLoad(new CEvent($this));
         if(!$this->hasComponent('accountManager')) $this->accountManager = array();
         if (!Yii::app()->user->isGuest) {
             $logout = true;
@@ -98,6 +99,7 @@ class LilyModule extends CWebModule {
             if ($logout)
                 Yii::app()->user->logout();
         }
+        $this->onAfterLilyLoad(new CEvent($this));        
     }
 
     public function setAccountManager($settings) {
@@ -134,10 +136,6 @@ class LilyModule extends CWebModule {
         return $result;
     }
 
-//    public function init() {
-//        parent::init();
-//    }
-
     public static function t($str = '', $params = array(), $dic = 'default') {
         return Yii::t("LilyModule." . $dic, $str, $params);
     }
@@ -146,16 +144,6 @@ class LilyModule extends CWebModule {
         $assets_path = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets';
         return Yii::app()->assetManager->publish($assets_path, false, -1, YII_DEBUG);
     }
-
-    public function registerCss($css) {
-        Yii::app()->getClientScript()->registerCssFile($this->getAssetsUrl() . "/css/$css.css");
-    }
-
-    public function registerJs($js) {
-        Yii::app()->clientScript->registerCoreScript('jquery');
-        Yii::app()->getClientScript()->registerScriptFile($this->getAssetsUrl() . "/js/$js.js");
-    }
-
 }
 
 ?>

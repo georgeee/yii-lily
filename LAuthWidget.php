@@ -2,7 +2,6 @@
 
 class LAuthWidget extends CWidget {
 
-    
     /**
      * @var array the services.
      * @see EAuth::getServices() 
@@ -18,11 +17,10 @@ class LAuthWidget extends CWidget {
      * @var string the action to use for dialog destination. Default: the current route.
      */
     public $action = null;
-    
     public $submitLabel = 'Login';
     public $showRememberMe = true;
     public $model = null;
-    
+
     /**
      * Initializes the widget.
      * This method is called by {@link CBaseController::createWidget}
@@ -42,8 +40,9 @@ class LAuthWidget extends CWidget {
         // Set the current route, if it is not set.
         if (!isset($this->action))
             $this->action = Yii::app()->urlManager->parseUrl(Yii::app()->request);
-        
-        if(!isset($this->model)) $this->model = new LLoginForm('', $this->services);
+
+        if (!isset($this->model))
+            $this->model = new LLoginForm('', $this->services);
     }
 
     /**
@@ -52,7 +51,7 @@ class LAuthWidget extends CWidget {
      */
     public function run() {
         parent::run();
-        $this->setId('LAuthWidget-form-'.$this->getId());
+        $this->setId('LAuthWidget-form-' . $this->getId());
         $this->model->id = $this->getId();
         $this->registerAssets();
         $this->render('authForm', array(
@@ -66,12 +65,14 @@ class LAuthWidget extends CWidget {
     }
 
     public function registerAssets() {
-        LilyModule::instance()->registerCss('authForm');
-        LilyModule::instance()->registerJs('authForm');
+        $assetsUrl = LilyModule::instance()->getAssetsUrl();
+        Yii::app()->clientScript->registerCssFile($assetsUrl . "/lily.css");
+        Yii::app()->clientScript->registerCoreScript('jquery');
+        Yii::app()->clientScript->registerScriptFile($assetsUrl . "/lily.js");
         $_services = $this->services;
         unset($_services['email']);
         //We have to run EAuthWidget to make it register it's assets
-        $this->widget('EAuthWidget', array('popup' => $this->popup, 'services' => $_services),true);
+        $this->widget('EAuthWidget', array('popup' => $this->popup, 'services' => $_services), true);
     }
 
 }
