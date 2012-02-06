@@ -27,14 +27,31 @@ class LilyModule extends CWebModule {
     public $passwordRegexp = '~^[a-zA-Z0-9\\-\\_\\|\\.\\,\\;\\=\\+\\~/\\\\\\[\\]\\{\\}\\!\\@\\#\\$\\%\\^\\*\\&\\(\\)\\ ]{8,32}$~';
     public $sessionTimeout = 604800; //Week
     public $enableUserMerge = true;
-    public $relations = array();
     public $userNameFunction = null;
     
+    public $_relations = array();
+    public $_userRelations = array();
     public $_session = null;
     
     protected static $_instance;
     public static function instance(){
         return self::$_instance;
+    }
+    
+    public function getRelations(){
+        return $this->_relations;
+    }
+    public function getUserRelations(){
+        return $this->_userRelations;
+    }
+    
+    public function setRelations($relations){
+        $this->_relations = $relations;
+        $userRelations = array();
+        foreach($relations as $name => $relation){
+            $userRelations[$name] = $relation['relation'];
+        }
+        $this->_userRelations = $userRelations;
     }
     
     public function onUserMerge($event){
@@ -85,11 +102,11 @@ class LilyModule extends CWebModule {
                         $this->_session = $session;
                         Yii::app()->user->name = $this->_session->account->user->getName($this->userNameFunction);
                         $this->_session->account->user->setScenario('registered');
-                        if (!isset($this->_session->account->user->name)
-                                && !in_array(Yii::app()->urlManager->parseUrl(Yii::app()->getRequest()), array('lily/user/edit', 'lily/user/logout', 'site/logout'))) {
-                            Yii::app()->user->setFlash('lily_incompleteUserData', self::t('Your user data is incomplete! Please fill in the suggested form in order to continue site exploring.'));
-                            Yii::app()->request->redirect(Yii::app()->createUrl('lily/user/edit', array('returnUrl' => Yii::app()->request->getUrl())));
-                        }
+//                        if (!isset($this->_session->account->user->name)
+//                                && !in_array(Yii::app()->urlManager->parseUrl(Yii::app()->getRequest()), array('lily/user/edit', 'lily/user/logout', 'site/logout'))) {
+//                            Yii::app()->user->setFlash('lily_incompleteUserData', self::t('Your user data is incomplete! Please fill in the suggested form in order to continue site exploring.'));
+//                            Yii::app()->request->redirect(Yii::app()->createUrl('lily/user/edit', array('returnUrl' => Yii::app()->request->getUrl())));
+//                        }
 
                         $logout = false;
                     }else

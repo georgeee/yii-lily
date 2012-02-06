@@ -72,12 +72,11 @@ class LUser extends CActiveRecord {
      * @return array relational rules.
      */
     public function relations() {
-        // NOTE: you may need to adjust the relation name and the related
-        // class name for the relations automatically generated below.
-        return array(
+        $relations = array(
             'accounts' => array(self::HAS_MANY, 'LAccount', 'uid'),
             'emailActivations' => array(self::HAS_MANY, 'LAccount', 'uid'),
         );
+        return array_merge($relations, LilyModule::instance()->userRelations);
     }
 
     //TODO What will happen if id==null
