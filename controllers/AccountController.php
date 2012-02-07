@@ -24,7 +24,6 @@ class AccountController extends Controller {
                 'actions' => array('bind', 'merge', 'index'),
                 'users' => array('@'),
             ),
-            
             array('allow',
                 'actions' => array('list'),
                 'expression' => function($user, $rule) {
@@ -37,7 +36,8 @@ class AccountController extends Controller {
                 'actions' => array('delete'),
                 'expression' => function($user, $rule) {
                     $aid = Yii::app()->request->getParam('aid');
-                    if($aid==null) return false;
+                    if ($aid == null)
+                        return false;
                     return LAccount::model()->findByPk($aid)->uid == $user->id;
                 },
             ),
@@ -136,14 +136,9 @@ class AccountController extends Controller {
             throw new CHttpException(404, Yii::t('lily.account.merge', 'Incorrect merge id specified!'));
         $accept = Yii::app()->request->getPost('accept');
         if (isset($accept)) {
-            $result = LilyModule::instance()->accountManager->merge(LilyModule::instance()->sessionData->merge[$merge_id]);
+            LilyModule::instance()->accountManager->merge(LilyModule::instance()->sessionData->merge[$merge_id], Yii::app()->user->id);
             unset(LilyModule::instance()->sessionData->merge[$merge_id]);
-            if ($result)
-                $this->redirect('list');
-            else {
-                Yii::app()->user->setFlash('lily.merge.fail', LilyModule::t('Failed to merge user accounts.'));
-                $this->redirect('bind');
-            }
+            $this->redirect('list');
         }
         $this->render('merge', array('user' => LUser::model()->findByPk(LilyModule::instance()->sessionData->merge[$merge_id])));
     }

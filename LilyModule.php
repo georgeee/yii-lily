@@ -28,7 +28,7 @@ class LilyModule extends CWebModule {
     public $sessionTimeout = 604800; //Week
     public $enableUserMerge = true;
     public $userNameFunction = null;
-    public $_relations = array();
+    public $_relations = null;
     public $_userRelations = array();
     public $_session = null;
     protected static $_instance;
@@ -46,7 +46,17 @@ class LilyModule extends CWebModule {
     }
 
     public function setRelations($relations) {
-        $this->_relations = $relations;
+        $this->_relations = array_merge($relations, array(
+            'accounts' => array(
+                'relation' => array(CActiveRecord::HAS_MANY, 'LAccount', 'uid'),
+                'onUserMerge' => 'auto'
+            ),
+            'emailActivations' => array(
+                'relation' => array(CActiveRecord::HAS_MANY, 'LEmailAccountActivation', 'uid'),
+                'onUserMerge' => 'auto'
+            ),
+                )
+        );
         $userRelations = array();
         foreach ($relations as $name => $relation) {
             $userRelations[$name] = $relation['relation'];
@@ -54,7 +64,60 @@ class LilyModule extends CWebModule {
         $this->_userRelations = $userRelations;
     }
 
-    public function onUserMerge($event) {
+    public function onUserMerge(LMergeEvent $event) {
+        foreach ($this->relations as $name => $relation) {
+            if (isset($relation['onUserMerge'])) {
+                $type = $relation['onUserMerge'];
+                if ($type == 'auto') {
+                    switch ($relation['relation'][0]) {
+                        case CActiveRecord::HAS_MANY:
+                            Yii::app()->db->createCommand()->update(CActiveRecord::model($relation['relation'][1])->tableName(), array($relation['relation'][2] => $event->newUid), $relation['relation'][2] . '=:oldUserId', array(':oldUserId' => $event->oldUid));
+                            break;
+                        case CActiveRecord::HAS_ONE:
+                            Yii::app()->db->createCommand()->delete(CActiveRecord::model($relation['relation'][1])->tableName(), $relation['relation'][2] . '=:oldUserId', array(':oldUserId' => $event->oldUid));
+                            break;
+                        case CActiveRecord::BELONGS_TO:
+                            throw new LException("Lily doesn't support userMerge auto on BELONGS_TO relationship");
+                            break;
+                        case CActiveRecord::MANY_MANY:
+                            if (!preg_match('/^\s*(.*?)\((.*)\)\s*$/', $relation['relation'][2], $matches))
+                                throw new LException("Wrong data for MANY_MANY");
+                            $table = $matches[1];
+                            $keys = preg_split('/\s*,\s*/', $matches[2], -1, PREG_SPLIT_NO_EMPTY);
+                            if (substr($keys[1], 0, 2) == 't.')
+                                $keys[1] = substr($keys[1], 2);
+                            Yii::app()->db->createCommand()->update($table, array($keys[1] => $event->newUid), $keys[1] . '=:oldUserId', array(':oldUserId' => $event->oldUid));
+                            break;
+                    }
+                }else if ($type == 'event') {
+                    $oldUser = LUser::model()->findByPk($event->oldUid);
+                    switch ($relation['relation'][0]) {
+                        case CActiveRecord::HAS_MANY:
+                            if (isset($oldUser->$name))
+                                foreach ($oldUser->$name as $v)
+                                    $v->onUserMerge($event);
+                            break;
+                        case CActiveRecord::HAS_ONE:
+                            if (isset($oldUser->$name))
+                                $oldUser->$name->onUserMerge($event);
+                            break;
+                        case CActiveRecord::BELONGS_TO:
+                            if (isset($oldUser->$name))
+                                $oldUser->$name->onUserMerge($event);
+                            break;
+                        case CActiveRecord::MANY_MANY:
+                            if (isset($oldUser->$name))
+                                foreach ($oldUser->$name as $v)
+                                    $v->onUserMerge($event);
+                            break;
+                    }
+                }else if ($type == 'callback') {
+                    call_user_func($relation['callback'], $event);
+                } else {
+                    throw new LException("Invalid onUsermerge value '$type'");
+                }
+            }
+        }
         $this->raiseEvent('onUserMerge', $event);
     }
 
@@ -92,6 +155,8 @@ class LilyModule extends CWebModule {
             'lily.models.*',
         ));
         $this->onBeforeLilyLoad(new CEvent($this));
+        if (!isset($this->_relations))
+            $this->relations = array();
         if (!$this->hasComponent('accountManager'))
             $this->accountManager = array();
         if (!$this->hasComponent('userIniter'))
@@ -126,8 +191,6 @@ class LilyModule extends CWebModule {
         $this->onAfterLilyLoad(new CEvent($this));
     }
 
-    
-
     public function setUserIniter($settings) {
 
         $this->setComponents(
@@ -144,7 +207,7 @@ class LilyModule extends CWebModule {
     public function getUserIniter() {
         return $this->getComponent('userIniter');
     }
-    
+
     public function setAccountManager($settings) {
 
         $this->setComponents(

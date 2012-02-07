@@ -75,8 +75,6 @@ class LUser extends CActiveRecord {
      */
     public function relations() {
         $relations = array(
-            'accounts' => array(self::HAS_MANY, 'LAccount', 'uid'),
-            'emailActivations' => array(self::HAS_MANY, 'LAccount', 'uid'),
         );
         return array_merge($relations, LilyModule::instance()->userRelations);
     }
@@ -90,11 +88,6 @@ class LUser extends CActiveRecord {
         return $ids;
     }
 
-    public function appendUid($uid) {
-        $count = count($this->getAccountIds($uid));
-        $affected = $this->getDbConnection()->createCommand()->update(LAccount::model()->tableName(), array('uid' => $this->uid), 'uid=:oid', array(':oid' => $uid));
-        return $count == $affected;
-    }
 
     /**
      * @return array customized attribute labels (name=>label)

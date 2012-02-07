@@ -279,50 +279,34 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
     /**
      * Merges two users
      * 
-     * 
-     * After the execution, you can take a look at errorCode property of accountManager
-     * It can take following values:
-     * <ul>
-     * <li>1 - failed to merge uids</li>
-     * <li>2 - failed to delete appended user</li>
-     * <li>0 - everything is OK</li>
-     * </ul>
-     * 
-     * @param mixed $with_uid User id or model instance (this user will be appended)
-     * @param mixed $uid User id or model instance (if null, current user will be set)
+     * @param mixed $oldUid Old user id
+     * @param mixed $newUid New user id
      * @return boolean whether the operation succeed
      * @throws LException 
      */
-    public function merge($with_uid, $uid = null) {
+    public function merge($oldUid, $newUid) {
         $this->errorCode = 0;
-        if (!isset($with_uid))
+        if (!isset($oldUid) || !isset($newUid))
             throw new LException("Both uids on merging must be set!");
-        if (is_object($with_uid))
-            $with_uid = $with_uid->uid;
-
-        if (!isset($uid))
-            $uid = LilyModule::instance()->user;
-        if (!isset($uid))
+        $oldUser = LUser::model()->findByPk($oldUid);
+        $newUser = LUser::model()->findByPk($newUid);
+        
+        if (!isset($oldUser) || !isset($newUser))
             throw new LException("Both uids on merging must be set!");
-        if (!is_object($uid))
-            $uid = LUser::model()->findByPk($uid);
-
-        if (!$uid->appendUid($with_uid)) {
-            $this->errorCode = 1;
-            if ($this->enableLogging)
-                Yii::log("merge: failed to append $with_uid to $uid->uid.", CLogger::LEVEL_WARNING, 'lily.merge.fail');
-            return false;
+        
+        LilyModule::instance()->onUserMerge(new LMergeEvent($oldUid, $newUid));
+        
+        $oldUser->deleted = $newUid;
+                
+        if (!$oldUser->save()) {
+            throw new LException("Failed to set old user instance to state=deleted");
         }
-
-        if (!LUser::model()->findByPk($with_uid)->delete()) {
-            $this->errorCode = 2;
-            if ($this->enableLogging)
-                Yii::log("merge: failed to delete $with_uid.", CLogger::LEVEL_WARNING, 'lily.merge.fail');
-            return false;
-        }
+        
+        Yii::app()->db->createCommand()
+                ->update(LUser::model()->tableName(), array('deleted' => $newUid), 'deleted=:oldUid', array(':oldUid' => $oldUid));
+        
         if ($this->enableLogging)
-            Yii::log("merge: successfully appended $with_uid to $uid->uid.", CLogger::LEVEL_INFO, 'lily.merge.fail');
-        return true;
+            Yii::log("Merge: successfully appended $oldUid to $newUid.", CLogger::LEVEL_INFO, 'lily.merge.fail');
     }
 
 }
