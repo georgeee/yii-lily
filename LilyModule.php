@@ -28,42 +28,44 @@ class LilyModule extends CWebModule {
     public $sessionTimeout = 604800; //Week
     public $enableUserMerge = true;
     public $userNameFunction = null;
-    
     public $_relations = array();
     public $_userRelations = array();
     public $_session = null;
-    
     protected static $_instance;
-    public static function instance(){
+
+    public static function instance() {
         return self::$_instance;
     }
-    
-    public function getRelations(){
+
+    public function getRelations() {
         return $this->_relations;
     }
-    public function getUserRelations(){
+
+    public function getUserRelations() {
         return $this->_userRelations;
     }
-    
-    public function setRelations($relations){
+
+    public function setRelations($relations) {
         $this->_relations = $relations;
         $userRelations = array();
-        foreach($relations as $name => $relation){
+        foreach ($relations as $name => $relation) {
             $userRelations[$name] = $relation['relation'];
         }
         $this->_userRelations = $userRelations;
     }
-    
-    public function onUserMerge($event){
+
+    public function onUserMerge($event) {
         $this->raiseEvent('onUserMerge', $event);
     }
-    public function onAfterLilyLoad($event){
+
+    public function onAfterLilyLoad($event) {
         $this->raiseEvent('onAfterLilyLoad', $event);
     }
-    public function onBeforeLilyLoad($event){
+
+    public function onBeforeLilyLoad($event) {
         $this->raiseEvent('onBeforeLilyLoad', $event);
     }
-    
+
     public function getSession() {
         return $this->_session;
     }
@@ -90,7 +92,10 @@ class LilyModule extends CWebModule {
             'lily.models.*',
         ));
         $this->onBeforeLilyLoad(new CEvent($this));
-        if(!$this->hasComponent('accountManager')) $this->accountManager = array();
+        if (!$this->hasComponent('accountManager'))
+            $this->accountManager = array();
+        if (!$this->hasComponent('userIniter'))
+            $this->userIniter = array();
         if (!Yii::app()->user->isGuest) {
             $logout = true;
             $sid = Yii::app()->user->getState('sid');
@@ -102,6 +107,8 @@ class LilyModule extends CWebModule {
                         $this->_session = $session;
                         Yii::app()->user->name = $this->_session->account->user->getName($this->userNameFunction);
                         $this->_session->account->user->setScenario('registered');
+                        if (!$this->user->inited)
+                            $this->userIniter->start();
 //                        if (!isset($this->_session->account->user->name)
 //                                && !in_array(Yii::app()->urlManager->parseUrl(Yii::app()->getRequest()), array('lily/user/edit', 'lily/user/logout', 'site/logout'))) {
 //                            Yii::app()->user->setFlash('lily_incompleteUserData', self::t('Your user data is incomplete! Please fill in the suggested form in order to continue site exploring.'));
@@ -116,9 +123,28 @@ class LilyModule extends CWebModule {
             if ($logout)
                 Yii::app()->user->logout();
         }
-        $this->onAfterLilyLoad(new CEvent($this));        
+        $this->onAfterLilyLoad(new CEvent($this));
     }
 
+    
+
+    public function setUserIniter($settings) {
+
+        $this->setComponents(
+                array(
+                    'userIniter' => array_merge(array('class' => 'LUserIniter'), $settings),
+                )
+        );
+    }
+
+    /**
+     * email account manager component instance
+     * @return LEmailAccountManager 
+     */
+    public function getUserIniter() {
+        return $this->getComponent('userIniter');
+    }
+    
     public function setAccountManager($settings) {
 
         $this->setComponents(
@@ -161,6 +187,7 @@ class LilyModule extends CWebModule {
         $assets_path = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets';
         return Yii::app()->assetManager->publish($assets_path, false, -1, YII_DEBUG);
     }
+
 }
 
 ?>

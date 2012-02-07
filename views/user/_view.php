@@ -6,14 +6,15 @@ $this->widget('zii.widgets.CDetailView', array(
     'attributes' => array(
         'uid',
         'name',
-        'birthday',
-        array(
-            'label' => $data->getAttributeLabel('sex'),
-            'type' => 'text',
-            'value' => $data->sexOption,
-        ),
+        'deleted',
+        'active',
+        'inited',
         array(
             'label' => LilyModule::t('Accounts'),
+            'type' => 'raw',
+            'value' => CHtml::link(LilyModule::t("Go to account list"), $this->createUrl("account/list", array('uid'=>$data->uid))),
+        ),
+        array(
             'type' => 'raw',
             'value' => $this->widget('zii.widgets.grid.CGridView', array(
                 'dataProvider' => new CActiveDataProvider('LAccount', array(

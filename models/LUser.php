@@ -65,6 +65,8 @@ class LUser extends CActiveRecord {
         // will receive user inputs.
         return array(
             array('uid, deleted, inited, active', 'safe', 'on' => 'search'),
+            array('deleted, inited', 'default', 'value' => 0),
+            array('active', 'default', 'value' => 1),
         );
     }
 
