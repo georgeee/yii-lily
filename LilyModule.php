@@ -40,7 +40,7 @@
  * @property LUser $user current user object, null if user isn't authenticated
  * @property LAccount $account current account object (through one current user was authenticated), null if user isn't authenticated
  * @property LSession $session current session object, null if user isn't authenticated
- * @property stdClass $sessionData curent session data, null if user isn't authenticated
+ * @property stdClass $sessionData curent session data, empty object (new stdClass) if user isn't authenticated
  * @property string $assetsUrl url to assets folder, where assests of the module are published
  */
 class LilyModule extends CWebModule {
@@ -95,16 +95,30 @@ class LilyModule extends CWebModule {
         return self::$_instance;
     }
     
-    
+    /**
+     * Getter for relations property of this class
+     * (check out the class header for more information)
+     * @return array relations property
+     */
     public function getRelations() {
         return $this->_relations;
     }
 
+    /**
+     * Getter for userRelations property of this class
+     * (check out the class header for more information)
+     * @return array userRelations property
+     */
     public function getUserRelations() {
         return $this->_userRelations;
     }
 
-    public function setRelations($relations) {
+    /**
+     * Setter for relations property of this class
+     * (check out the class header for more information)
+     * @param array $relations relations array
+     */
+    public function setRelations(array $relations) {
         $this->_relations = array_merge($relations, array(
             'accounts' => array(
                 'relation' => array(CActiveRecord::HAS_MANY, 'LAccount', 'uid'),
@@ -123,6 +137,12 @@ class LilyModule extends CWebModule {
         $this->_userRelations = $userRelations;
     }
 
+    /**
+     * Method, that raises user merge event accros the class
+     * (and processes needed actions, like specified in onUserMerge, see $relations property of this class)
+     * @param LMergeEvent $eventUser merge event instance, with $oldUid and $newUid properties specified
+     * @throws LException
+     */
     public function onUserMerge(LMergeEvent $event) {
         foreach ($this->relations as $name => $relation) {
             if (isset($relation['onUserMerge'])) {
@@ -179,31 +199,57 @@ class LilyModule extends CWebModule {
         }
         $this->raiseEvent('onUserMerge', $event);
     }
-
+    /**
+     * Raises onAfterLilyLoad event
+     * @param CEvent $event event with sender - module instance
+     */
     public function onAfterLilyLoad($event) {
         $this->raiseEvent('onAfterLilyLoad', $event);
     }
 
+    /**
+     * Raises onBeforeLilyLoad event
+     * @param CEvent $event event with sender - module instance
+     */
     public function onBeforeLilyLoad($event) {
         $this->raiseEvent('onBeforeLilyLoad', $event);
     }
 
+    /**
+     * Getter for $session property
+     * @return LSession
+     */
     public function getSession() {
         return $this->_session;
     }
 
+    /**
+     * Getter for $account property
+     * @return LAccount
+     */
     public function getAccount() {
         return isset($this->_session->account) ? $this->_session->account : null;
     }
 
+    /**
+     * Getter for $user property
+     * @return LUser
+     */
     public function getUser() {
         return isset($this->_session->account->user) ? $this->_session->account->user : null;
     }
 
+    /**
+     * Getter for $sessionData property
+     * @return stdClass
+     */
     public function getSessionData() {
         return isset($this->_session->data) ? $this->_session->data : new stdClass;
     }
 
+    /**
+     * This function inits LilyModule instance
+     */
     public function init() {
         parent::init();
         self::$_instance = $this;
@@ -230,15 +276,9 @@ class LilyModule extends CWebModule {
                     if ($session->created + $this->sessionTimeout >= time()) {
                         $this->_session = $session;
                         Yii::app()->user->name = $this->_session->account->user->getName($this->userNameFunction);
-                        $this->_session->account->user->setScenario('registered');
+                        $this->_session->account->user;
                         if (!$this->user->inited)
                             $this->userIniter->start();
-//                        if (!isset($this->_session->account->user->name)
-//                                && !in_array(Yii::app()->urlManager->parseUrl(Yii::app()->getRequest()), array('lily/user/edit', 'lily/user/logout', 'site/logout'))) {
-//                            Yii::app()->user->setFlash('lily_incompleteUserData', self::t('Your user data is incomplete! Please fill in the suggested form in order to continue site exploring.'));
-//                            Yii::app()->request->redirect(Yii::app()->createUrl('lily/user/edit', array('returnUrl' => Yii::app()->request->getUrl())));
-//                        }
-
                         $logout = false;
                     }else
                         $session->delete();
@@ -250,6 +290,10 @@ class LilyModule extends CWebModule {
         $this->onAfterLilyLoad(new CEvent($this));
     }
 
+    /**
+     * Sets userIniter component configurations
+     * @param array $settings
+     */
     public function setUserIniter($settings) {
 
         $this->setComponents(
@@ -260,13 +304,17 @@ class LilyModule extends CWebModule {
     }
 
     /**
-     * email account manager component instance
-     * @return LEmailAccountManager 
+     * User initer component instance
+     * @return LUserIniter
      */
     public function getUserIniter() {
         return $this->getComponent('userIniter');
     }
 
+    /**
+     * Sets accountManager component configurations
+     * @param array $settings
+     */
     public function setAccountManager($settings) {
 
         $this->setComponents(
@@ -277,18 +325,29 @@ class LilyModule extends CWebModule {
     }
 
     /**
-     * email account manager component instance
+     * Email account manager component instance
      * @return LEmailAccountManager 
      */
     public function getAccountManager() {
         return $this->getComponent('accountManager');
     }
 
+    /**
+     * This function simply hashes the string, using function from $hashFunction property
+     * and salt from $hashSalt
+     * @param string $string string to hash
+     * @return string hash of string
+     */
     public function hash($str) {
         $hashFunction = $this->hashFunction;
         return $hashFunction($str . $this->hashSalt);
     }
 
+    /**
+     * This method generates random string f specified length
+     * @param integer $length Length of generated string
+     * @return string random string
+     */
     public function generateRandomString($length = -1) {
         if ($length == -1)
             $length = $this->randomKeyLength;
@@ -301,10 +360,22 @@ class LilyModule extends CWebModule {
         return $result;
     }
 
+    /**
+     * Alias for Yii::t()
+     * @param string $str string to translate
+     * @param array $params params for translation
+     * @param string $dictionary dictionary to use in string translation
+     * @return string translated string
+     */
     public static function t($str = '', $params = array(), $dic = 'default') {
         return Yii::t("LilyModule." . $dic, $str, $params);
     }
 
+    /**
+     * Getter for assetsUrl property
+     * It publishes mdule asserts and returns the path to assets folder
+     * @return string assets url
+     */
     public function getAssetsUrl() {
         $assets_path = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'assets';
         return Yii::app()->assetManager->publish($assets_path, false, -1, YII_DEBUG);
