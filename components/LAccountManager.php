@@ -277,7 +277,8 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
     }
 
     /**
-     * Merges two users
+     * Merges two users. Unlike to others methods of this class,
+     * it doesn't provide any errorCode, It just throws an Exception =)
      * 
      * @param mixed $oldUid Old user id
      * @param mixed $newUid New user id
