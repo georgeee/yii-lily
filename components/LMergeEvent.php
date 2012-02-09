@@ -1,19 +1,31 @@
 <?php
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * LMergeEvent class file.
+ *
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
+ * @license http://www.opensource.org/licenses/bsd-license.php
  */
 
 /**
- * Description of CMergeEvent
- *
- * @author georgeee
+ * LMergeEvent is a event class. An instance of this class is used as the argument on onUserMerge event raising.
+ * @package application.modules.lily.components
  */
 class LMergeEvent extends CModelEvent{
-    
-    public $oldUid, $newUid;
-    
+    /**
+     * @var integer old Uid, an uid of the user, that should be appended to another
+     */
+    public $oldUid;
+    /**
+     * @var integer new Uid, an uid of the user, to which another user will be appended
+     */
+    public $newUid;
+
+    /**
+     * This function constructs new LMergeEvent
+     * @param $oldUid
+     * @param $newUid
+     */
     public function __construct($oldUid, $newUid) {
         parent::__construct(null, null);
         $this->newUid = $newUid;

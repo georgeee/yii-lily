@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * 
+ */
 class LAuthWidget extends CWidget {
 
     /**

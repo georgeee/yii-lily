@@ -1,16 +1,15 @@
 <?php
-
-/**
- * EAuthUserIdentity class file.
+ /**
+ * LUserIdentity class file.
  *
- * @author Maxim Zemskov <nodge@yandex.ru>
- * @link http://code.google.com/p/yii-eauth/
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
  * @license http://www.opensource.org/licenses/bsd-license.php
  */
 
 /**
- * EAuthUserIdentity is a base User Identity class to authenticate with EAuth.
- * @package application.extensions.eauth
+ * LUserIdentity is a base User Identity class for processing authentication by Lily.
+ * @package application.modules.lily.components
  */
 class LUserIdentity extends CBaseUserIdentity {
 
@@ -52,7 +51,8 @@ class LUserIdentity extends CBaseUserIdentity {
             $id = $this->service->id;
             $service = $this->service->serviceName;
             $this->account = LAccount::model()->findByAttributes(array('id' => $id, 'service' => $service));
-            Yii::log("LUserIdentity launched with service=$service, id=$id", 'info', 'lily.LUserIdentity.info');
+            if(LilyModule::instance()->enableLogging)
+                Yii::log("LUserIdentity launched with service=$service, id=$id", CLogger::LEVEL_INFO, 'lily');
             if (!isset($this->account))
                 $this->account = LAccount::create($service, $id, null, $this->user);
             if (!isset($this->account)) {
@@ -79,7 +79,8 @@ class LUserIdentity extends CBaseUserIdentity {
         } else {
             $this->errorCode = self::ERROR_NOT_AUTHENTICATED;
         }
-        Yii::log("LUserIdentity finished with code $this->errorCode", 'info', 'lily.LUserIdentity.info');
+        if(LilyModule::instance()->enableLogging)
+            Yii::log("LUserIdentity finished with code $this->errorCode", CLogger::LEVEL_INFO, 'lily');
         return !$this->errorCode;
     }
 

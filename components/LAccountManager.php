@@ -1,9 +1,15 @@
 <?php
+/**
+ * LAccountManager class file.
+ *
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
+ * @license http://www.opensource.org/licenses/bsd-license.php
+ */
 
 /**
- * Helper component for email account managment
- *
- * @author georgeee
+ * LAccountManager is a component class, containing several common methods for account managment.
+ * @package application.modules.lily.components
  */
 class LAccountManager extends CApplicationComponent {
 
@@ -52,10 +58,6 @@ class LAccountManager extends CApplicationComponent {
      */
     public $activationTimeout = 86400;
 
-    /**
-     * @var boolean Whether to populate log messages 
-     */
-    public $enableLogging = true;
 
     /**
      * @var integer here will be put errorCode after executing some method (see method details)
@@ -92,11 +94,11 @@ class LAccountManager extends CApplicationComponent {
         $message->addTo($account->id);
         $message->from = $this->adminEmail;
         $recipient_count = Yii::app()->mail->send($message);
-        if ($this->enableLogging) {
+        if (LilyModule::instance()->enableLogging) {
             if ($recipient_count > 0)
-                Yii::log('E-mail to ' + $account->id + ' was sent.', 'info', 'lily.mail.success');
+                Yii::log('E-mail to ' . $account->id . ' was sent.', 'info', 'lily.mail.success');
             else
-                Yii::log('Failed to send e-mail to ' + $account->id + '.', 'info', 'lily.mail.fail');
+                Yii::log('Failed to send e-mail to ' . $account->id . '.', 'info', 'lily.mail.fail');
         }
         $this->errorCode = $recipient_count == 0;
         return $recipient_count > 0;
@@ -140,11 +142,11 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
         $message->addTo($code->email);
         $message->from = $this->adminEmail;
         $recipient_count = Yii::app()->mail->send($message);
-        if ($this->enableLogging) {
+        if (LilyModule::instance()->enableLogging) {
             if ($recipient_count > 0)
-                Yii::log('E-mail to ' + $code->email + ' was sent.', 'info', 'lily.mail.success');
+                Yii::log('E-mail to ' . $code->email . ' was sent.', CLogger::LEVEL_INFO, 'lily');
             else
-                Yii::log('Failed sending e-mail to ' + $code->email + '.', 'info', 'lily.mail.fail');
+                Yii::log('Failed sending e-mail to '. $code->email . '.', CLogger::LEVEL_INFO, 'lily');
         }
         $this->errorCode = $recipient_count == 0;
         return $recipient_count > 0;
@@ -189,13 +191,13 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
                         $this->errorCode = 2;
                     }
                 }
-                if ($this->enableLogging)
-                    Yii::log("performRegistration: created new account ($email, $password, " . ($user_account == null ? 'null' : $user_account->uid) . ").", 'info', 'lily.performRegistration.success');
+                if (LilyModule::instance()->enableLogging)
+                    Yii::log("performRegistration: created new account ($email, $password, " . ($user_account == null ? 'null' : $user_account->uid) . ").", CLogger::LEVEL_INFO, 'lily');
                 return $account;
             }else {
                 $this->errorCode = 1;
-                if ($this->enableLogging)
-                    Yii::log("performRegistration: failed to create LAccount DB record ($email, $password, " . ($user_account == null ? 'null' : $user_account->uid) . ").", 'info', 'lily.performRegistration.fail');
+                if (LilyModule::instance()->enableLogging)
+                    Yii::log("performRegistration: failed to create LAccount DB record ($email, $password, " . ($user_account == null ? 'null' : $user_account->uid) . ").", CLogger::LEVEL_INFO, 'lily');
                 return null;
             }
         }
@@ -203,8 +205,8 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
         $code = LEmailAccountActivation::create($email, $password, $user_account);
         if (!isset($code)) {
             $this->errorCode = 1;
-            if ($this->enableLogging)
-                Yii::log("performRegistration: failed to create LEmailAccountActivation DB record ($email, $password, " . ($user_account == null ? 'null' : $user_account->uid) . ").", 'info', 'lily.performRegistration.fail');
+            if (LilyModule::instance()->enableLogging)
+                Yii::log("performRegistration: failed to create LEmailAccountActivation DB record ($email, $password, " . ($user_account == null ? 'null' : $user_account->uid) . ").", CLogger::LEVEL_INFO, 'lily');
             return null;
         }
         if ($send_mail) {
@@ -212,8 +214,8 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
             if (!$result) {
                 $this->errorCode = 2;
             }
-            if ($this->enableLogging)
-                Yii::log("performRegistration: created new activation code $code->code ($email, $password, " . ($user_account == null ? 'null' : $user_account->uid) . ").", 'info', 'lily.performRegistration.success');
+            if (LilyModule::instance()->enableLogging)
+                Yii::log("performRegistration: created new activation code $code->code ($email, $password, " . ($user_account == null ? 'null' : $user_account->uid) . ").", CLogger::LEVEL_INFO, 'lily');
         }
         return $code;
     }
@@ -235,9 +237,9 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
      * If DB insertion succeed, it returns an instance of Model, refered to
      * created row (EEEmailAccount)
      * @param string $code Activation code, sent by email
-     * @param type $send_mail Whether to send an email to the user
+     * @param bool $send_mail Whether to send an email to the user
      * (activation email if $activate is true, or information email if it's false)
-     * @return LEmailAccount null if DB record was not created or Model instance of the created row, if DB insertion succeed
+     * @return LAccount null if DB record was not created or Model instance of the created row, if DB insertion succeed
      */
     public function performActivation($_code, $send_mail = null) {
         $this->errorCode = 0;
@@ -246,27 +248,27 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
         $code = LEmailAccountActivation::model()->findByAttributes(array('code' => $_code));
         if (!isset($code)) {
             $this->errorCode = 1;
-            if ($this->enableLogging)
-                Yii::log("performActivation: failed to find code record code $_code.", 'info', 'lily.performActivation.info');
+            if (LilyModule::instance()->enableLogging)
+                Yii::log("performActivation: failed to find code record code $_code.", CLogger::LEVEL_INFO, 'lily');
             return null;
         }
         if (time() > $code->created + $this->activationTimeout) {
             $code->delete();
             $this->errorCode = 2;
-            if ($this->enableLogging)
-                Yii::log("performActivation: activation code $_code expired.", 'info', 'lily.performActivation.info');
+            if (LilyModule::instance()->enableLogging)
+                Yii::log("performActivation: activation code $_code expired.", CLogger::LEVEL_INFO, 'lily');
             return null;
         }
         $account = LAccount::create('email', $code->email, (object) array('password' => $code->password), $code->uid);
         if (!isset($account)) {
             $this->errorCode = 3;
-            if ($this->enableLogging)
-                Yii::log("performActivation: failed to create LAccount record (code $_code).", 'info', 'lily.performActivation.fail');
+            if (LilyModule::instance()->enableLogging)
+                Yii::log("performActivation: failed to create LAccount record (code $_code).", CLogger::LEVEL_INFO, 'lily');
             return null;
         }
         $code->delete();
-        if ($this->enableLogging)
-            Yii::log("performActivation: new account by code $_code was created (aid $account->aid).", 'info', 'lily.performActivation.success');
+        if (LilyModule::instance()->enableLogging)
+            Yii::log("performActivation: new account by code $_code was created (aid $account->aid).", CLogger::LEVEL_INFO, 'lily');
         if ($send_mail) {
             $result = $this->sendInformationMail($account);
             if (!$result) {
@@ -306,8 +308,8 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
         Yii::app()->db->createCommand()
                 ->update(LUser::model()->tableName(), array('deleted' => $newUid), 'deleted=:oldUid', array(':oldUid' => $oldUid));
         
-        if ($this->enableLogging)
-            Yii::log("Merge: successfully appended $oldUid to $newUid.", CLogger::LEVEL_INFO, 'lily.merge.fail');
+        if (LilyModule::instance()->enableLogging)
+            Yii::log("Merge: successfully appended $oldUid to $newUid.", CLogger::LEVEL_INFO, 'lily');
     }
 
 }

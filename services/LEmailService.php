@@ -39,7 +39,7 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
         if (!isset($account)) { //Performing the registration
             $mixed = LilyModule::instance()->accountManager->performRegistration($email, $password, null, null, $this->user);
             if (LilyModule::instance()->accountManager->activate) {
-                if (LilyModule::instance()->accountManager->error_code == 0) {
+                if (LilyModule::instance()->accountManager->errorCode == 0) {
                     $this->errorCode = self::ERROR_ACTIVATION_MAIL_SENT;
                 } else {
                     $this->errorCode = self::ERROR_ACTIVATION_MAIL_FAILED;
@@ -61,10 +61,10 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
                 $this->errorCode = self::ERROR_NONE;
             } else {
                 $this->errorCode = self::ERROR_AUTH_FAILED;
-            Yii::log("LEmailService auth failed: $password_hash is not {$account->data->password}.", 'info', 'lily.LEmailService.info');
+            Yii::log("LEmailService auth failed: $password_hash is not {$account->data->password}.", CLogger::LEVEL_INFO, 'lily');
             }
         }
-            Yii::log("LEmailService auth resulted with code $this->errorCode.", 'info', 'lily.LEmailService.info');
+            Yii::log("LEmailService auth resulted with code $this->errorCode.", CLogger::LEVEL_INFO, 'lily');
         return $this->authenticated;
     }
     protected function fetchAttributes() {

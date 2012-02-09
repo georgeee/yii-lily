@@ -1,41 +1,72 @@
 <?php
+/**
+ * LLoginForm class file.
+ *
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
+ * @license http://www.opensource.org/licenses/bsd-license.php
+ */
 
-class LLoginForm extends CFormModel {
-
+/**
+ * LLoginForm is a model class for login form implemention.
+ * @package application.modules.lily.components
+ */
+class LLoginForm extends CFormModel
+{
+    /**
+     * @var string email field
+     */
     public $email;
+    /**
+     * @var string password field
+     */
     public $password;
+    /**
+     * @var string rememberMe field
+     */
     public $rememberMe;
+    /**
+     * @var string service name field
+     */
     public $service;
+    /**
+     * @var string Form HTML id attribute.
+     * It's used by LAuthWidget in order to pass html attribute to validator.
+     */
     public $id;
-    
+    /**
+     * @var array services, available for selection (in order to use by validator)
+     */
     public $services;
-    
-    public function __construct($scenario = '', $services = null) {
+
+    public function __construct($scenario = '', $services = null)
+    {
         parent::__construct($scenario);
-        if(!isset($services)) $services = array_keys(Yii::app()->eauth->getServices());
+        if (!isset($services)) $services = array_keys(Yii::app()->eauth->getServices());
         $this->services = $services;
     }
-    
+
     /**
      * Declares the validation rules.
      * The rules state that username and password are required,
      * and password needs to be authenticated.
      */
-    public function rules() {
+    public function rules()
+    {
         return array(
             array('service', 'in', 'range' => $this->services),
-            // username and password are required
-            // rememberMe needs to be a boolean
             array('rememberMe', 'boolean'),
-            // password needs to be authenticated
+            //Special validator. It uses default validators, but on clientvalidation
+            //prefixes 'em with JS code, that checks service set to email (otherwise it's incorrect to validate them)
             array('email, password', 'lily.components.LLoginFormValidator'),
         );
     }
-    
+
     /**
      * Declares attribute labels.
      */
-    public function attributeLabels() {
+    public function attributeLabels()
+    {
         return array(
             'rememberMe' => 'Remember me next time',
         );

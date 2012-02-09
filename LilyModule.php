@@ -78,6 +78,11 @@ class LilyModule extends CWebModule {
     public $enableUserMerge = true;
 
     /**
+     * @var boolean Whether to populate log messages
+     */
+    public $enableLogging = true;
+
+    /**
      * @var mixed callback, that takes LUser object as argument and return user's name
      */
     public $userNameFunction = null;
@@ -326,7 +331,7 @@ class LilyModule extends CWebModule {
 
     /**
      * Email account manager component instance
-     * @return LEmailAccountManager 
+     * @return LAccountManager
      */
     public function getAccountManager() {
         return $this->getComponent('accountManager');
