@@ -24,10 +24,11 @@
  * @todo show start and finish steps
  * @package application.modules.lily.components
  */
-class LUserIniter extends CApplicationComponent {
-/**
- * @var bool Whether to show initial step page with common information about next actions
- */
+class LUserIniter extends CApplicationComponent
+{
+    /**
+     * @var bool Whether to show initial step page with common information about next actions
+     */
     public $showStartStep = true;
     /**
      * @var bool Whether to show finish step page with common information about site using, registration results or etc.
@@ -42,27 +43,33 @@ class LUserIniter extends CApplicationComponent {
     protected $_stepId;
     protected $_count;
     protected $_isStarted = false;
+
     /**
      * This function just inits LUserIniter component
      */
-    public function init() {
+    public function init()
+    {
         parent::init();
         $this->_steps = isset(LilyModule::instance()->session->data->userInitData->steps) ? LilyModule::instance()->session->data->userInitData->steps : null;
         $this->_stepId = isset(LilyModule::instance()->session->data->userInitData->stepId) ? LilyModule::instance()->session->data->userInitData->stepId : null;
         $this->_count = isset(LilyModule::instance()->session->data->userInitData->count) ? LilyModule::instance()->session->data->userInitData->count : null;
     }
+
     /**
      * Getter for $count property
      * @return integer
      */
-    public function getCount() {
+    public function getCount()
+    {
         return $this->_count;
     }
+
     /**
      * Getter for $steps property
      * @return array
      */
-    public function getSteps() {
+    public function getSteps()
+    {
         return $this->_steps;
     }
 
@@ -70,7 +77,8 @@ class LUserIniter extends CApplicationComponent {
      * Getter for $stepId property
      * @return integer
      */
-    public function getStepId() {
+    public function getStepId()
+    {
         return $this->_stepId;
     }
 
@@ -78,15 +86,17 @@ class LUserIniter extends CApplicationComponent {
      * Getter for $step property
      * @return object
      */
-    public function getStep() {
+    public function getStep()
+    {
         return $this->steps[$this->stepId];
     }
 
     /**
      * This function sets Lily to next step, this function should be called by step controller after processing the form.
      */
-    public function nextStep() {
-        if(LilyModule::instance()->enableLogging)
+    public function nextStep()
+    {
+        if (LilyModule::instance()->enableLogging)
             Yii::log("userIniter: passed step $this->stepId", CLogger::LEVEL_INFO, 'lily');
         if ($this->stepId < count($this->steps)) {
             LilyModule::instance()->session->data->userInitData->stepId++;
@@ -101,7 +111,8 @@ class LUserIniter extends CApplicationComponent {
      * This function adds route to allowed list of current step (if it isn't there yet)
      * @param string $route
      */
-    public function allow($route) {
+    public function allow($route)
+    {
         if (!in_array($route, $this->step->allowed)) {
             $this->step->allowed[] = $route;
             LilyModule::instance()->session->data->userInitData->steps[$this->stepId]->allowed[] = $route;
@@ -113,17 +124,19 @@ class LUserIniter extends CApplicationComponent {
      * Getter for isStarted property
      * @return bool
      */
-    public function getIsStarted(){
+    public function getIsStarted()
+    {
         return $this->_isStarted;
     }
 
     /**
      * This function starts userIniter. It gets called by LilyModule::init if it assumes that current user isn't yet inited
      */
-    public function start() {
-        if($this->isStarted) return;
+    public function start()
+    {
+        if ($this->isStarted) return;
         $this->_isStarted = true;
-        if(LilyModule::instance()->enableLogging)
+        if (LilyModule::instance()->enableLogging)
             Yii::log("userIniter started", CLogger::LEVEL_INFO, 'lily');
         if (!isset($this->steps)) {
             $count = 0;
@@ -132,10 +145,10 @@ class LUserIniter extends CApplicationComponent {
                 if (isset($relation['onRegister'])) {
                     $onRegister_route = is_array($relation['onRegister']) ? $relation['onRegister'][0] : $relation['onRegister'];
                     $onRegister_query = is_array($relation['onRegister']) ? array_slice($relation['onRegister'], 1) : array();
-                    $steps[++$count] = (object) array(
-                                'page' => Yii::app()->createUrl($onRegister_route, $onRegister_query),
-                                'name' => $name,
-                                'allowed' => array($onRegister_route),
+                    $steps[++$count] = (object)array(
+                        'page' => Yii::app()->createUrl($onRegister_route, $onRegister_query),
+                        'name' => $name,
+                        'allowed' => array($onRegister_route),
                     );
                 }
             }
@@ -154,14 +167,15 @@ class LUserIniter extends CApplicationComponent {
     /**
      * This function is called after last step gets executed and it finishes user init process
      */
-    protected function finish() {
-        if(LilyModule::instance()->enableLogging)
-        LilyModule::instance()->user->inited = true;
+    protected function finish()
+    {
+        if (LilyModule::instance()->enableLogging)
+            LilyModule::instance()->user->inited = true;
         LilyModule::instance()->user->save();
-        if(is_string($this->finishRedirectUrl))
+        if (is_string($this->finishRedirectUrl))
             $redirectUrl = Yii::app()->createUrl($this->finishRedirectUrl);
         else
-            $redirectUrl = Yii::app()->createUrl ($this->finishRedirectUrl[0], array_slice ($this->finishRedirectUrl, 1));
+            $redirectUrl = Yii::app()->createUrl($this->finishRedirectUrl[0], array_slice($this->finishRedirectUrl, 1));
         Yii::log("userIniter finished", CLogger::LEVEL_INFO, 'lily');
         Yii::app()->request->redirect($redirectUrl);
     }

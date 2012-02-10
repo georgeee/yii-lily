@@ -1,4 +1,11 @@
 <?php
+/**
+ * LilyModule class file.
+ *
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
+ * @license http://www.opensource.org/licenses/bsd-license.php
+ */
 
 /**
  * Lily Module
@@ -13,7 +20,6 @@
  * you speak russian, I really suggest you to read it.
  * 
  *
- * @author georgeee
  * @property LAccountManager $accountManager account manager instance
  * @property LilyModule $instance module main class current instance
  * @property LUserIniter $userIniter component for user init process (when
@@ -42,6 +48,8 @@
  * @property LSession $session current session object, null if user isn't authenticated
  * @property stdClass $sessionData curent session data, empty object (new stdClass) if user isn't authenticated
  * @property string $assetsUrl url to assets folder, where assests of the module are published
+ *
+ * @package application.modules.lily
  */
 class LilyModule extends CWebModule {
 

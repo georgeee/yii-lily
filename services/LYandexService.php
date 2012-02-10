@@ -1,15 +1,29 @@
 <?php
-
 /**
- * An example of extending the provider class.
+ * LYandexService class file.
  *
- * @author Maxim Zemskov <nodge@yandex.ru>
- * @link http://code.google.com/p/yii-eauth/
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
  * @license http://www.opensource.org/licenses/bsd-license.php
  */
-class LYandexService extends YandexOpenIDService {
 
+/**
+ * LYandexService is a eauth service class.
+ * It provides properties and fetching method for eauth extension to authenticate through Yandex OAuth service.
+ *
+ * @package application.modules.lily.services
+ */
+
+class LYandexService extends YandexOpenIDService
+{
+    /**
+     * @var array arguments for the jQuery.eauth() javascript function.
+     */
     protected $jsArguments = array('popup' => array('width' => 900, 'height' => 620));
+    /**
+     * @var array the OpenID required attributes.
+     */
+
     protected $requiredAttributes = array(
         'name' => array('fullname', 'namePerson'),
         'username' => array('nickname', 'namePerson/friendly'),
@@ -18,8 +32,13 @@ class LYandexService extends YandexOpenIDService {
         'birthday' => array('birthday', 'birthDate'),
     );
 
-    protected function fetchAttributes() {
-        $this->attributes['sex'] = ($this->attributes['sex']=='M');
+    /**
+     * Fetch attributes array.
+     * @return boolean whether the attributes was successfully fetched.
+     */
+    protected function fetchAttributes()
+    {
+        $this->attributes['sex'] = ($this->attributes['sex'] == 'M');
         $this->attributes['url'] = $this->id;
         if (isset($this->attributes['name']) && !empty($this->attributes['name']))
             $this->attributes['displayId'] = $this->attributes['name'];

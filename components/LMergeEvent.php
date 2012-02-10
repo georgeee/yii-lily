@@ -11,7 +11,8 @@
  * LMergeEvent is a event class. An instance of this class is used as the argument on onUserMerge event raising.
  * @package application.modules.lily.components
  */
-class LMergeEvent extends CModelEvent{
+class LMergeEvent extends CModelEvent
+{
     /**
      * @var integer old Uid, an uid of the user, that should be appended to another
      */
@@ -26,7 +27,8 @@ class LMergeEvent extends CModelEvent{
      * @param $oldUid
      * @param $newUid
      */
-    public function __construct($oldUid, $newUid) {
+    public function __construct($oldUid, $newUid)
+    {
         parent::__construct(null, null);
         $this->newUid = $newUid;
         $this->oldUid = $oldUid;

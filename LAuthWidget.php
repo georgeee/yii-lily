@@ -1,7 +1,16 @@
 <?php
+/**
+ * LAuthWidget class file.
+ *
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
+ * @license http://www.opensource.org/licenses/bsd-license.php
+ */
 
 /**
- * 
+ * LAuthWidget is a widget, that you can use to display login form.
+ *
+ * @package application.modules.lily
  */
 class LAuthWidget extends CWidget {
 
@@ -20,15 +29,21 @@ class LAuthWidget extends CWidget {
      * @var string the action to use for dialog destination. Default: the current route.
      */
     public $action = null;
+    /**
+     * @var string submit button label
+     */
     public $submitLabel = 'Login';
+    /**
+     * @var bool Whether to show rememberMe checkbox
+     */
     public $showRememberMe = true;
+    /**
+     * @var LLoginForm login form model instance
+     */
     public $model = null;
 
     /**
      * Initializes the widget.
-     * This method is called by {@link CBaseController::createWidget}
-     * and {@link CBaseController::beginWidget} after the widget's
-     * properties have been initialized.
      */
     public function init() {
         parent::init();
@@ -44,13 +59,13 @@ class LAuthWidget extends CWidget {
         if (!isset($this->action))
             $this->action = Yii::app()->urlManager->parseUrl(Yii::app()->request);
 
+        //If model isn't present, we just create one
         if (!isset($this->model))
             $this->model = new LLoginForm('', $this->services);
     }
 
     /**
      * Executes the widget.
-     * This method is called by {@link CBaseController::endWidget}.
      */
     public function run() {
         parent::run();
@@ -66,7 +81,9 @@ class LAuthWidget extends CWidget {
             'model' => $this->model,
         ));
     }
-
+    /**
+     * Registers JS an CSS files, that are used for login form displaying
+     */
     public function registerAssets() {
         $assetsUrl = LilyModule::instance()->getAssetsUrl();
         Yii::app()->clientScript->registerCssFile($assetsUrl . "/lily.css");

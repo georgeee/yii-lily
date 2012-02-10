@@ -13,14 +13,16 @@
  * so this validator a bit alters pointed-above valdators behaviour in order to sutisfy our wishes =)
  * @package application.modules.lily.components
  */
-class LLoginFormValidator extends CValidator {
+class LLoginFormValidator extends CValidator
+{
 
     /**
      * This function validates attribute (see validator docs of yii)
      * @param object $object
      * @param string $attribute
      */
-    protected function validateAttribute($object, $attribute) {
+    protected function validateAttribute($object, $attribute)
+    {
         if (isset($object->service) && $object->service != 'email' && $object->service != '')
             return;
         $v = ($attribute == 'email' ? CValidator::createValidator('email', $object, $attribute) : CValidator::createValidator('match', $object, $attribute, array('pattern' => LilyModule::instance()->passwordRegexp)));
@@ -35,11 +37,12 @@ class LLoginFormValidator extends CValidator {
      * @param $attribute
      * @return string JS code
      */
-    public function clientValidateAttribute($object, $attribute) {
+    public function clientValidateAttribute($object, $attribute)
+    {
         $v1 = ($attribute == 'email' ? CValidator::createValidator('email', $object, $attribute) : CValidator::createValidator('match', $object, $attribute, array('pattern' => LilyModule::instance()->passwordRegexp)));
         $v2 = CValidator::createValidator('required', $object, $attribute);
-        return "if ( $('#$object->id .authMethodSelect').val() == 'email' ) {".$v1->clientValidateAttribute($object, $attribute)
-                .$v2->clientValidateAttribute($object, $attribute) . "}";
+        return "if ( $('#$object->id .authMethodSelect').val() == 'email' ) {" . $v1->clientValidateAttribute($object, $attribute)
+            . $v2->clientValidateAttribute($object, $attribute) . "}";
     }
 
 }

@@ -1,33 +1,70 @@
 <?php
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * LEmailService class file.
+ *
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
+ * @license http://www.opensource.org/licenses/bsd-license.php
  */
 
 /**
- * Description of EEEmailService
+ * LEmailService is a eauth service class.
+ * It provides email authentication functionality to application.
  *
- * @author georgeee
+ * @package application.modules.lily.services
  */
-class LEmailService extends EAuthServiceBase implements IAuthService {
-
+class LEmailService extends EAuthServiceBase implements IAuthService
+{
+    /**
+     * Everything is OK.
+     */
     const ERROR_NONE = 0;
+    /**
+     * Failed to authenticate authentication identity (email-password mismatch).
+     */
     const ERROR_AUTH_FAILED = 1;
+    /**
+     * No errors occured. Activation mail to user was sent and user will be registered
+     * as soon as he will click the activation url in the email message body.
+     */
     const ERROR_ACTIVATION_MAIL_SENT = 2;
+    /**
+     * Error occured while trying to send activation mail.
+     */
     const ERROR_ACTIVATION_MAIL_FAILED = 3;
+    /**
+     * Unrecognized error occured
+     */
     const ERROR_UNRECOGNIZED = 4;
 
     protected $name = 'email';
     protected $title = 'E-mail';
     protected $type = 'email';
+    /**
+     * @var string email field, put here email address, you want to authenticate
+     */
     public $email;
+    /**
+     * @var string password field, put here password, with which you want to authenticate
+     */
     public $password;
+    /**
+     * @var integer code of the error, that occured, ERROR_NONE will be set if no errors occured
+     */
     public $errorCode;
-    
+
+    /**
+     * @var LUser user-owner of the email account, specified on bind process
+     * (null means that we're trying to authenticate, not bind an account to already existing user)
+     */
     public $user = null;
-    
-    public function authenticate() {
+
+    /**
+     * This function simply tries to authenticate auth identity (see docs about user authenticating behaviour)
+     * @return bool is user identity authenticated or authentication failed
+     */
+    public function authenticate()
+    {
         $email = $this->email;
         $password = $this->password;
         $this->authenticated = false;
@@ -61,15 +98,13 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
                 $this->errorCode = self::ERROR_NONE;
             } else {
                 $this->errorCode = self::ERROR_AUTH_FAILED;
-            Yii::log("LEmailService auth failed: $password_hash is not {$account->data->password}.", CLogger::LEVEL_INFO, 'lily');
+                Yii::log("LEmailService auth failed: $password_hash is not {$account->data->password}.", CLogger::LEVEL_INFO, 'lily');
             }
         }
-            Yii::log("LEmailService auth resulted with code $this->errorCode.", CLogger::LEVEL_INFO, 'lily');
+        Yii::log("LEmailService auth resulted with code $this->errorCode.", CLogger::LEVEL_INFO, 'lily');
         return $this->authenticated;
     }
-    protected function fetchAttributes() {
-        parent::fetchAttributes();
-    }
+
 }
 
 ?>

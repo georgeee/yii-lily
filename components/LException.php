@@ -11,7 +11,8 @@
  * LException is a exception class, all of exceptions, raised by Lily are instances of this class.
  * @package application.modules.lily.components
  */
-class LException extends Exception{
+class LException extends Exception
+{
 }
 
 ?>

@@ -1,58 +1,66 @@
 <?php
 
 /**
- * This is the model class for table "{{account}}".
+ * LSession class file.
  *
- * The followings are the available columns in table '{{account}}':
- * @property integer $uid
- * @property string $service_id
- * @property string $user_id
- * @property string $service_data
- * @property string $created
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
+ * @license http://www.opensource.org/licenses/bsd-license.php
  */
-class LSession extends CActiveRecord {
 
-    protected $unserialized = false;
+/**
+ * LSession is a model class, that serves to manage with user sessions.
+ *
+ * Two words about handling data:
+ * Data is contained in unserialized way. After retrieving from database or saving, it gets unserialized and before saving it gets serialized back.
+ * Maybe later it should be rewrited to minimize count of serialize/unserialize actions
+ *
+ * @property integer $sid Session id
+ * @property integer $aid Account id
+ * @property object $data Session data object. You can put there some common information, refered to this session
+ * (as default it contains information, retrieved from service). Don't forget to save session after editing it (call save() method)
+ * @property string $ssid Secure session id. It's a random generated string, which is used for avoiding session data substitution.
+ * @property integer $created Timestamp of the moment, this session was created
+ *
+ * @package application.modules.lily.models
+ */
+class LSession extends CActiveRecord
+{
+
 
     /**
      * Returns the static model of the specified AR class.
      * @param string $className active record class name.
-     * @return LAccount the static model class
+     * @return LSession the static model class
      */
-    public static function model($className = __CLASS__) {
+    public static function model($className = __CLASS__)
+    {
         return parent::model($className);
     }
 
     /**
      * @return string the associated database table name
      */
-    public function tableName() {
+    public function tableName()
+    {
         return '{{lily_session}}';
     }
 
     /**
      * @return array validation rules for model attributes.
      */
-    public function rules() {
-        // NOTE: you should only define rules for those attributes that
-        // will receive user inputs.
+    public function rules()
+    {
         return array(
-//			array('service_id, user_id, created', 'required'),
-//			array('uid', 'numerical', 'integerOnly'=>true),
-//			array('service_id, user_id', 'length', 'max'=>255),
-//			array('service_data', 'safe'),
-            // The following rule is used by search().
-            // Please remove those attributes that should not be searched.
-            array('sid, aid, created', 'safe', 'on' => 'search'),
+            array('aid, created', 'safe', 'on' => 'search'),
         );
     }
 
     /**
      * @return array relational rules.
      */
-    public function relations() {
-        // NOTE: you may need to adjust the relation name and the related
-        // class name for the relations automatically generated below.
+    public function relations()
+    {
         return array(
             'account' => array(self::BELONGS_TO, 'LAccount', 'aid'),
         );
@@ -61,69 +69,83 @@ class LSession extends CActiveRecord {
     /**
      * @return array customized attribute labels (name=>label)
      */
-    public function attributeLabels() {
+    public function attributeLabels()
+    {
         return array(
-            'sid' => 'Session id',
-            'aid' => 'Account id',
-            'created' => 'Created',
+            'sid' => LilyModule::t('Session id'),
+            'aid' => LilyModule::t('Account id'),
+            'created' => LilyModule::t('Created'),
+            'ssid' => LilyModule::t('Secure session id'),
         );
     }
 
-    public function checkUnserialized() {
-        if (!$this->unserialized) {
-            $this->data = unserialize($this->data);
-            $this->unserialized = true;
-        }
+    /**
+     * This method simply unserializes data attribute
+     */
+    protected function unserializeData()
+    {
+        $this->data = unserialize($this->data);
     }
 
-    public function checkSerialized() {
-        if ($this->unserialized) {
-            $this->data = serialize($this->data);
-            $this->unserialized = false;
-        }
+    /**
+     * This method simply serializes data attribute
+     */
+    protected function serializeData()
+    {
+        $this->data = serialize($this->data);
     }
 
-    protected function afterFind() {
+    /**
+     * After find handler, gets executed after model instance being retrieved from database
+     */
+    protected function afterFind()
+    {
         parent::afterFind();
-        $this->checkUnserialized();
+        $this->unserializeData();
     }
 
-    protected function afterSave() {
+    /**
+     * After save handler, gets executed after model instance being saved to database
+     */
+    protected function afterSave()
+    {
         parent::afterSave();
-        $this->checkUnserialized();
+        $this->unserializeData();
     }
 
-    protected function beforeSave() {
+    /**
+     * Before save handler, gets executed before model instance being saved to database
+     * @return bool true, we haven't to disallow saving action
+     */
+    protected function beforeSave()
+    {
         parent::beforeSave();
-        $this->checkSerialized();
+        $this->serializeData();
         return true;
     }
+
 
     /**
      * Retrieves a list of models based on the current search/filter conditions.
      * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
      */
-    public function search() {
-        // Warning: Please modify the following code to remove attributes that
-        // should not be searched.
-
+    public function search()
+    {
         $criteria = new CDbCriteria;
-
-        $criteria->compare('sid', $this->sid);
-        $criteria->compare('aid', $this->aid, true);
-        $criteria->compare('created', $this->created, true);
-
+        $criteria->compare('aid', $this->aid);
+        $criteria->compare('created', $this->created);
         return new CActiveDataProvider($this, array(
-                    'criteria' => $criteria,
-                ));
+            'criteria' => $criteria,
+        ));
     }
 
     /**
      * Launchs new session
      * @param string $aid Account id (or instance)
-     * @return LSession
+     * @return LSession created session or null if failed
      */
-    public static function create($aid = null, $data = null) {
+    public static function create($aid = null, $data = null)
+    {
         if (!isset($aid)) {
             return null;
         }
@@ -132,7 +154,6 @@ class LSession extends CActiveRecord {
         $session = new LSession;
         $session->aid = $aid;
         $session->created = time();
-        $session->unserialized = true;
         $session->data = $data;
         $session->ssid = LilyModule::instance()->generateRandomString();
         return $session->save() ? $session : null;
