@@ -159,7 +159,11 @@ class LUserIniter extends CApplicationComponent
             LilyModule::instance()->session->save();
         }
         $route = Yii::app()->urlManager->parseUrl(Yii::app()->request);
-        if (!in_array($route, $this->step->allowed)) {
+        Yii::log("userIniter started with route $route", CLogger::LEVEL_INFO, 'lily');
+        if (!in_array($route, $this->step->allowed)
+            && !in_array($route, LilyModule::instance()->allowedRoutes)
+            && !in_array($route, array('lily/user/logout'))
+        ) {
             Yii::app()->request->redirect($this->step->page);
         }
     }

@@ -86,7 +86,7 @@ class LAccountManager extends CApplicationComponent
         if (isset($this->informationMailSubjectCallback))
             $subject = call_user_func($this->informationMailSubjectCallback, $account);
         if (!isset($subject) || !is_string($subject))
-            $subject = Yii::t('ee', 'E-mail registration on {siteName}', array('{siteName}' => Yii::app()->name));
+            $subject = LilyModule::t('E-mail registration on {siteName}', array('{siteName}' => Yii::app()->name));
         $message->setSubject($subject);
         $message->view = $this->informationMailView;
         if (isset($this->informationMailView))
@@ -129,7 +129,7 @@ class LAccountManager extends CApplicationComponent
         if (isset($this->activationMailSubjectCallback))
             $subject = call_user_func($this->activationMailSubjectCallback, $code, $user_account);
         if (!isset($subject) || !is_string($subject))
-            $subject = Yii::t('ee', 'E-mail registration on {siteName}', array('{siteName}' => Yii::app()->name));
+            $subject = LilyModule::t('E-mail registration on {siteName}', array('{siteName}' => Yii::app()->name));
         $message->setSubject($subject);
         $message->view = $this->activationMailView;
         if (isset($this->activationMailView))

@@ -9,7 +9,7 @@
 
 /**
  * LLoginForm is a model class for login form implemention.
- * @package application.modules.lily.components
+ * @package application.modules.lily.models
  */
 class LLoginForm extends CFormModel
 {
@@ -46,11 +46,10 @@ class LLoginForm extends CFormModel
         $this->services = $services;
     }
 
-    /**
-     * Declares the validation rules.
-     * The rules state that username and password are required,
-     * and password needs to be authenticated.
-     */
+/**
+* Declares the validation rules.
+* @return array validation rules
+*/
     public function rules()
     {
         return array(

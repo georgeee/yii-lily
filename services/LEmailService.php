@@ -32,10 +32,6 @@ class LEmailService extends EAuthServiceBase implements IAuthService
      * Error occured while trying to send activation mail.
      */
     const ERROR_ACTIVATION_MAIL_FAILED = 3;
-    /**
-     * Unrecognized error occured
-     */
-    const ERROR_UNRECOGNIZED = 4;
 
     protected $name = 'email';
     protected $title = 'E-mail';
@@ -83,7 +79,7 @@ class LEmailService extends EAuthServiceBase implements IAuthService
                 }
             } else {
                 if (!isset($mixed))
-                    $this->errorCode = self::ERROR_UNRECOGNIZED;
+                    throw new LException("Account was not registered (performRegistration returned nulll)");
                 else {
                     $this->errorCode = self::ERROR_NONE;
                     $this->attributes['displayId'] = $this->id = $email;
@@ -103,6 +99,26 @@ class LEmailService extends EAuthServiceBase implements IAuthService
         }
         Yii::log("LEmailService auth resulted with code $this->errorCode.", CLogger::LEVEL_INFO, 'lily');
         return $this->authenticated;
+    }
+
+    /**
+     * Simply redirects user to the specified url (if not specified, redirectUrl property will be used instead)
+     *
+     * We have to override this function, because email authentication doesn't require popup.
+     * @param string $url
+     */
+    public function redirect($url = null) {
+        Yii::app()->request->redirect(isset($url) ? $url : $this->getRedirectUrl(), true);
+    }
+
+    /**
+     * Simply redirects user to the specified url (if not specified, cancelUrl property will be used instead)
+     *
+     * We have to override this function, because email authentication doesn't require popup.
+     * @param string $url
+     */
+    public function cancel($url = null) {
+        Yii::app()->request->redirect(isset($url) ? $url : $this->getCancelUrl(), false);
     }
 
 }

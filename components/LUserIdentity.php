@@ -15,7 +15,6 @@ class LUserIdentity extends CBaseUserIdentity
 {
 
     const ERROR_NOT_AUTHENTICATED = 3;
-    const ERROR_UNRECOGNIZED = 4;
 
     /**
      * @var EAuthServiceBase the authorization service instance.
@@ -59,12 +58,12 @@ class LUserIdentity extends CBaseUserIdentity
             if (!isset($this->account))
                 $this->account = LAccount::create($service, $id, null, $this->user);
             if (!isset($this->account)) {
-                $this->errorCode = self::ERROR_UNRECOGNIZED;
+                throw new LException("Account has to be specified (possibly error with account creating)");
             } else {
                 if (!isset($this->user))
                     $this->session = LSession::create($this->account, (object)$this->service->getAttributes());
                 if (!isset($this->user) && !isset($this->session)) {
-                    $this->errorCode = self::ERROR_UNRECOGNIZED;
+                    throw new LException("Either user or session have to be specified (possibly error with session creating)");
                 } else {
                     $this->id = $this->account->uid;
                     $this->name = $this->account->user->name;

@@ -1,14 +1,17 @@
 <?php
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * AccountController class file.
+ *
+ * @author George Agapov <george.agapov@gmail.com>
+ * @link https://github.com/georgeee/yii-lily
+ * @license http://www.opensource.org/licenses/bsd-license.php
  */
 
 /**
- * Description of DefaultControlle
+ * AccountController is a controller class, which manages with account bind/list/delete actions.
  *
- * @author georgeee
+ * @package application.modules.lily.controllers
  */
 class AccountController extends Controller {
 
@@ -33,16 +36,16 @@ class AccountController extends Controller {
                 'users' => array('@'),
             ),
             array('allow',
-                'actions' => array('delete'),
+                'actions' => array('delete', 'edit'),
                 'expression' => function($user, $rule) {
                     $aid = Yii::app()->request->getParam('aid');
-                    if ($aid == null)
-                        return false;
-                    return LAccount::model()->findByPk($aid)->uid == $user->id;
+                    $account = LAccount::model()->findByPk($aid);
+                    if($account==null) return false;
+                    return $account->uid == $user->id;
                 },
             ),
             array('allow',
-                'actions' => array('list', 'delete', 'index'),
+                'actions' => array('list', 'delete', 'index', 'edit'),
                 'roles' => array('admin'),
             ),
             array('deny',
@@ -133,7 +136,7 @@ class AccountController extends Controller {
     public function actionMerge() {
         $merge_id = Yii::app()->request->getQuery('merge_id');
         if (!isset($merge_id) || !isset(LilyModule::instance()->sessionData->merge[$merge_id]))
-            throw new CHttpException(404, Yii::t('lily.account.merge', 'Incorrect merge id specified!'));
+            throw new CHttpException(404, LilyModule::t('Incorrect merge id specified!'));
         $accept = Yii::app()->request->getPost('accept');
         if (isset($accept)) {
             LilyModule::instance()->accountManager->merge(LilyModule::instance()->sessionData->merge[$merge_id], Yii::app()->user->id);
@@ -158,19 +161,33 @@ class AccountController extends Controller {
         $this->render('list', array('accountProvider' => $dataProvider, 'user' => LUser::model()->findByPk($uid)));
     }
 
-    public function actionDelete() {
-        $aid = Yii::app()->request->getQuery('aid');
-        if (!isset($aid))
-            throw new CHttpException(404, Yii::t('lily.account.delete', 'Account id not specified!'));
+    public function actionDelete($aid, $accept = null) {
         $account = LAccount::model()->findByPk($aid);
-        if (!isset($account))
-            throw new CHttpException(404, Yii::t('lily.account.delete', 'Incorrect account id specified!'));
-        $accept = Yii::app()->request->getPost('accept');
         if (isset($accept)) {
             $account->delete();
             $this->redirect('list');
         }
         $this->render('delete', array('account' => $account));
+    }
+
+    public function actionEdit($aid){
+        $account = LAccount::model()->findByPk($aid);
+        if($account->service == 'email'){
+            $model = new LPasswordChangeForm;
+            if (isset($_POST['ajax']) && $_POST['ajax'] === 'password-form') {
+                echo CActiveForm::validate($model);
+                Yii::app()->end();
+            }
+            if(isset($_POST['LPasswordChangeForm'])){
+                $model->attributes = $_POST['LPasswordChangeForm'];
+                if($model->validate()){
+                    $account->data->password = LilyModule::instance()->hash($model->password);
+                    $account->save();
+                    $this->redirect('list');
+                }
+            }
+            $this->render('edit', array('model' => $model, 'account'=>$account));
+        }else throw new CHttpException(404);
     }
 
 }

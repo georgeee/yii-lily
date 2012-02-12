@@ -94,6 +94,12 @@ class LilyModule extends CWebModule {
      * @var mixed callback, that takes LUser object as argument and return user's name
      */
     public $userNameFunction = null;
+
+    /**
+     * @var array routes, that are allowed during any step
+     */
+    public $allowedRoutes = array();
+
     protected $_relations = null;
     protected $_userRelations = array();
     protected $_session = null;
