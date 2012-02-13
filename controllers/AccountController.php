@@ -190,6 +190,22 @@ class AccountController extends Controller {
         }else throw new CHttpException(404);
     }
 
+    public function actionRestore(){
+        $model = new LRestoreForm;
+        if (isset($_POST['ajax']) && $_POST['ajax'] === 'restore-form') {
+            echo CActiveForm::validate($model);
+            Yii::app()->end();
+        }
+        if(isset($_POST['LRestoreForm'])){
+            $model->attributes = $_POST['LRestoreForm'];
+            if($model->validate()){
+                LilyModule::instance()->accountManager->sendRestoreMail($model->account);
+                //TODO notification about was mail sent or not
+                $this->redirect('user/login');
+            }
+        }
+        $this->render('edit', array('model' => $model, 'account'=>$account));
+    }
 }
 
 ?>

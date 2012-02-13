@@ -76,7 +76,7 @@ class LAccountManager extends CApplicationComponent
      * <li>0 - everything is OK</li>
      * </ul>
      *
-     * @param LAccount $email_account Email account model instance
+     * @param LAccount $account Account model instance
      * @return boolean true, if mail was sent, false otherwise
      */
     public function sendInformationMail(LAccount $account)
@@ -240,7 +240,7 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
      *
      * If DB insertion succeed, it returns an instance of Model, refered to
      * created row (EEEmailAccount)
-     * @param string $code Activation code, sent by email
+     * @param string $_code Activation code, sent by email
      * @param bool $send_mail Whether to send an email to the user
      * (activation email if $activate is true, or information email if it's false)
      * @return LAccount null if DB record was not created or Model instance of the created row, if DB insertion succeed
@@ -316,6 +316,29 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
 
         if (LilyModule::instance()->enableLogging)
             Yii::log("Merge: successfully appended $oldUid to $newUid.", CLogger::LEVEL_INFO, 'lily');
+    }
+
+    /**
+     * Perform one-time login by one-time login token (see LOneTime::create())
+     * @param string $token One time login token
+     * @return bool Was user logged in or not
+     */
+    public function oneTimeLogin($token){
+        $authIdentity = Yii::app()->eauth->getIdentity('onetime');
+        $authIdentity->token = $token;
+        if ($authIdentity->authenticate()) {
+            $identity = new LUserIdentity($authIdentity);
+            //Authentication succeed
+            if ($identity->authenticate()) {
+                $result = Yii::app()->user->login($identity, 0);
+                if($result) return true;
+            }
+        }
+        return false;
+    }
+
+    public function sendRestoreMail(LAccount $account){
+        //TODO send restore mail
     }
 
 }

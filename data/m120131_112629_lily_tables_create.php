@@ -32,6 +32,12 @@ class m120131_112629_lily_tables_create extends CDbMigration {
             'ssid' => 'string NOT NULL',
             'created' => 'integer',
         ), 'ENGINE=InnoDB');
+        $this->createTable('{{lily_onetime}}', array(
+            'tid' => 'pk',
+            'uid' => 'integer',
+            'token' => 'string NOT NULL',
+            'created' => 'integer',
+        ), 'ENGINE=InnoDB');
         $this->createIndex('email', '{{lily_email_account}}', 'email', true);
         $this->createIndex('service_user', '{{lily_account}}', 'service_id,user_id', true);
     }
@@ -39,8 +45,9 @@ class m120131_112629_lily_tables_create extends CDbMigration {
     public function down() {
         $this->dropTable('{{lily_user}}');
         $this->dropTable('{{lily_account}}');
-        $this->dropTable('{{lily_session}}');
         $this->dropTable('{{lily_email_account_activation}}');
+        $this->dropTable('{{lily_session}}');
+        $this->dropTable('{{lily_onetime}}');
     }
 
 }
