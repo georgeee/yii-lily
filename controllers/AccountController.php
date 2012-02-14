@@ -67,7 +67,7 @@ class AccountController extends Controller {
         }
         $model_new = false;
 
-        $services = Yii::app()->eauth->getServices();
+        $services = LilyModule::instance()->services;
         if (Yii::app()->getRequest()->getQuery('service') != null) {
             $_services = $services;
             unset($_services['email']);
@@ -150,7 +150,7 @@ class AccountController extends Controller {
         $uid = Yii::app()->request->getQuery('uid', Yii::app()->user->id);
         $dataProvider = new CActiveDataProvider('LAccount', array(
                     'criteria' => array(
-                        'condition' => 'uid=:uid',
+                        'condition' => 'uid=:uid AND hidden=0',
                         'params' => array(':uid' => $uid),
                         'order' => 'uid ASC',
                     ),
@@ -199,12 +199,16 @@ class AccountController extends Controller {
         if(isset($_POST['LRestoreForm'])){
             $model->attributes = $_POST['LRestoreForm'];
             if($model->validate()){
-                LilyModule::instance()->accountManager->sendRestoreMail($model->account);
-                //TODO notification about was mail sent or not
-                $this->redirect('user/login');
+                $result = LilyModule::instance()->accountManager->sendRestoreMail($model->account);
+                if($result){
+                    Yii::app()->user->setFlash('lily.restore.success', LilyModule::t('Message with restoration instructions was sent to your e-mail.'));
+                }else{
+                    Yii::app()->user->setFlash('lily.restore.fail', LilyModule::t('Failed to send e-mail with restoration instructions.'));
+                }
+                $this->redirect(array('user/login'));
             }
         }
-        $this->render('edit', array('model' => $model, 'account'=>$account));
+        $this->render('restore', array('model' => $model));
     }
 }
 

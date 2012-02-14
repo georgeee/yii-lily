@@ -42,7 +42,7 @@ class LLoginForm extends CFormModel
     public function __construct($scenario = '', $services = null)
     {
         parent::__construct($scenario);
-        if (!isset($services)) $services = array_keys(Yii::app()->eauth->getServices());
+        if (!isset($services)) $services = array_keys(LilyModule::instance()->services);
         $this->services = $services;
     }
 

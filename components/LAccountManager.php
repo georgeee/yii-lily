@@ -23,6 +23,10 @@ class LAccountManager extends CApplicationComponent
      * @var string path to view of activation letter (null - use the default content)
      */
     public $activationMailView = null;
+    /**
+     * @var string path to view of restore letter (null - use the default content)
+     */
+    public $restoreMailView = null;
 
     /**
      * @var mixed callback for email subject of information letter
@@ -33,6 +37,11 @@ class LAccountManager extends CApplicationComponent
      * @var mixed callback for email subject of activation letter
      */
     public $activationMailSubjectCallback = null;
+
+    /**
+     * @var mixed callback for email subject of restoration letter
+     */
+    public $restoreMailSubjectCallback = null;
 
     /**
      * @var boolean Whether to activate new account
@@ -53,6 +62,11 @@ class LAccountManager extends CApplicationComponent
      * @var string Route to activate action
      */
     public $activationUrl = 'lily/user/activate';
+
+    /**
+     * @var string Route to activate action
+     */
+    public $onetimeUrl = 'lily/user/onetime';
 
     /**
      * @var integer Timeout, after that activation will be rejected, even if code is clear
@@ -98,9 +112,9 @@ class LAccountManager extends CApplicationComponent
         $recipient_count = Yii::app()->mail->send($message);
         if (LilyModule::instance()->enableLogging) {
             if ($recipient_count > 0)
-                Yii::log('E-mail to ' . $account->id . ' was sent.', 'info', 'lily.mail.success');
+                Yii::log('E-mail to ' . $account->id . ' was sent.', CLogger::LEVEL_INFO, 'lily.mail.success');
             else
-                Yii::log('Failed to send e-mail to ' . $account->id . '.', 'info', 'lily.mail.fail');
+                Yii::log('Failed to send e-mail to ' . $account->id . '.', CLogger::LEVEL_WARNING, 'lily.mail.fail');
         }
         $this->errorCode = $recipient_count == 0;
         return $recipient_count > 0;
@@ -118,22 +132,22 @@ class LAccountManager extends CApplicationComponent
      * </ul>
      *
      * @param LEmailAccountActivation $code Activation model instance
-     * @param LUser $user_account model instance of the user account
+     * @param LUser $user model instance of the user account
      * (for purpose of using it in mail message) or NULL $code was provided for new account registration
      * @return boolean true, if mail was sent, false otherwise
      */
-    public function sendActivationMail(LEmailAccountActivation $code, LUser $user_account = null)
+    public function sendActivationMail(LEmailAccountActivation $code, LUser $user = null)
     {
         $this->errorCode = 0;
         $message = new YiiMailMessage();
         if (isset($this->activationMailSubjectCallback))
-            $subject = call_user_func($this->activationMailSubjectCallback, $code, $user_account);
+            $subject = call_user_func($this->activationMailSubjectCallback, $code, $user);
         if (!isset($subject) || !is_string($subject))
             $subject = LilyModule::t('E-mail registration on {siteName}', array('{siteName}' => Yii::app()->name));
         $message->setSubject($subject);
         $message->view = $this->activationMailView;
         if (isset($this->activationMailView))
-            $message->setBody(array('code' => $code, 'user_account' => $user_account), 'text/html');
+            $message->setBody(array('code' => $code, 'user' => $user), 'text/html');
         else
             $message->setBody(LilyModule::t('Your email was used in registration on <a href="{siteUrl}">{siteName}</a>.<br />
 To activate it you have to go by this <a href="{activationUrl}">link</a></li> in your browser. <br />
@@ -149,7 +163,7 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
             if ($recipient_count > 0)
                 Yii::log('E-mail to ' . $code->email . ' was sent.', CLogger::LEVEL_INFO, 'lily');
             else
-                Yii::log('Failed sending e-mail to ' . $code->email . '.', CLogger::LEVEL_INFO, 'lily');
+                Yii::log('Failed sending e-mail to ' . $code->email . '.', CLogger::LEVEL_WARNING, 'lily');
         }
         $this->errorCode = $recipient_count == 0;
         return $recipient_count > 0;
@@ -337,8 +351,52 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
         return false;
     }
 
+    /**
+     * This function just sends a restoration email
+     *
+     *
+     * After the execution, you can take a look at errorCode property of accountManager
+     * It can take following values:
+     * <ul>
+     * <li>1 - failed to send email</li>
+     * <li>0 - everything is OK</li>
+     * </ul>
+     *
+     * @param LAccount $account Account (service - email) - account, to which's mail we will send mail.
+     * @return boolean true, if mail was sent, false otherwise
+     */
     public function sendRestoreMail(LAccount $account){
-        //TODO send restore mail
+        $this->errorCode = 0;
+        $onetime = LOneTime::create($account->uid);
+        if(!isset($onetime)) throw new LException("Failed to create one-time token.");
+        $message = new YiiMailMessage();
+        if (isset($this->restoreMailSubjectCallback))
+            $subject = call_user_func($this->restoreMailSubjectCallback, $account);
+        if (!isset($subject) || !is_string($subject))
+            $subject = LilyModule::t('Password restoration on {siteName}', array('{siteName}' => Yii::app()->name));
+        $message->setSubject($subject);
+        $message->view = $this->restoreMailView;
+        if (isset($this->restoreMailView))
+            $message->setBody(array('account' => $account), 'text/html');
+        else
+            $message->setBody(LilyModule::t('Your email is registered on <a href="{siteUrl}">{siteName}</a>.<br />
+And someone (possibly you) requested password restoration. <br />
+If it was you, open <a href="{restoreUrl}">link</a></li> in your browser in order to login on website and then change the password in account settings. <br />
+<br />
+Yours respectfully,<br />
+administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteUrl(''), '{siteName}' => Yii::app()->name,
+                '{restoreUrl}' => Yii::app()->createAbsoluteUrl($this->onetimeUrl, array('token' => $onetime->token)))), 'text/html');
+        $message->addTo($account->id);
+        $message->from = $this->adminEmail;
+        $recipient_count = Yii::app()->mail->send($message);
+        if (LilyModule::instance()->enableLogging) {
+            if ($recipient_count > 0)
+                Yii::log('E-mail to ' . $account->id . ' was sent.', CLogger::LEVEL_INFO, 'lily');
+            else
+                Yii::log('Failed sending e-mail to ' . $account->id . '.', CLogger::LEVEL_WARNING, 'lily');
+        }
+        $this->errorCode = $recipient_count == 0;
+        return $recipient_count > 0;
     }
 
 }

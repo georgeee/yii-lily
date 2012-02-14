@@ -45,7 +45,7 @@ class LAccount extends CActiveRecord
      */
     public function getServiceName()
     {
-        $services = Yii::app()->eauth->getServices();
+        $services = LilyModule::instance()->services;
         return $services[$this->service]->title;
     }
 
@@ -73,6 +73,7 @@ class LAccount extends CActiveRecord
     public function rules()
     {
         return array(
+            array('hidden', 'default', 'value' => 0),
             array('uid, service, id, created', 'safe', 'on' => 'search'),
         );
     }
@@ -159,6 +160,7 @@ class LAccount extends CActiveRecord
         $criteria->compare('service', $this->service, true);
         $criteria->compare('id', $this->id, true);
         $criteria->compare('created', $this->created, true);
+        $criteria->compare('hidden', 0);
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,
         ));
@@ -176,8 +178,8 @@ class LAccount extends CActiveRecord
     public static function create($service, $id, $data = null, $uid = null)
     {
         if (!isset($uid)) {
-            $uid = new LUser;
-            if (!$uid->save()) {
+            $uid = LUser::create();
+            if (!isset($uid)) {
                 if (LilyModule::instance()->enableLogging)
                     Yii::log("LAccount::create($service, $id,..) failed on new User creation", CLogger::LEVEL_ERROR, 'lily');
                 return null;

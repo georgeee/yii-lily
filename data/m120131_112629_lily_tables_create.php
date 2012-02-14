@@ -14,6 +14,7 @@ class m120131_112629_lily_tables_create extends CDbMigration {
             'uid' => 'integer',
             'service' => 'string NOT NULL',
             'id' => 'string NOT NULL',
+            'hidden' => 'boolean',
             'data' => 'binary',
             'created' => 'integer',
         ), 'ENGINE=InnoDB');

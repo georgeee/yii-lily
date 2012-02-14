@@ -51,7 +51,7 @@ class LAuthWidget extends CWidget {
 
         // Some default properties from component configuration
         if (!isset($this->services))
-            $this->services = Yii::app()->eauth->getServices();
+            $this->services = LilyModule::instance()->services;
         if (!isset($this->popup))
             $this->popup = Yii::app()->eauth->popup;
 

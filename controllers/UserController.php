@@ -57,7 +57,7 @@ class UserController extends Controller {
 
         $model_new = false;
 
-        $services = Yii::app()->eauth->getServices();
+        $services = LilyModule::instance()->services;
         if (Yii::app()->getRequest()->getQuery('service') != null) {
             $_services = $services;
             unset($_services['email']);
@@ -169,6 +169,13 @@ class UserController extends Controller {
         $model = LUser::model()->findByPk($uid);
         $model->setScenario('registered');
         $this->render('view', array('user' => $model));
+    }
+
+    public function actionOnetime($token, $redirectUrl = null){
+        $result = LilyModule::instance()->accountManager->oneTimeLogin($token);
+        if($result) Yii::app()->user->setFlash('lily.onetime.success', LilyModule::t('You were successfully logged in.'));
+        else Yii::app()->setFlash('lily.onetime.fail', LilyModule::t('Wrong one-time login token.'));
+        $this->redirect(isset($redirectUrl)?$redirectUrl:Yii::app()->homeUrl);
     }
 
 }

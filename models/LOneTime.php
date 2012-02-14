@@ -98,10 +98,10 @@ class LOneTime extends CActiveRecord
         if (is_object($uid))
             $uid = $uid->uid;
         $token = new LOneTime;
-        $token->token = '';//TODO insert random string generator
+        $token->token = LilyModule::instance()->generateRandomString();
         $token->uid = $uid;
         $token->created = time();
-        if (!$token->save()) {
+        if ($token->save()) {
             if (LilyModule::instance()->enableLogging)
                 Yii::log("LOneTime::create($uid) successfully created new one-time login token tid={$token->tid}", CLogger::LEVEL_INFO, 'lily');
             return $token;

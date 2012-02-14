@@ -38,7 +38,7 @@ class LOneTimeService extends EAuthServiceBase implements IAuthService
         $token = LOneTime::model()->findByAttributes(array('token'=>$this->token));
 
         if (isset($token)) {
-            $this->id = $token->uid;
+            $this->attributes['id'] = $token->uid;
             $this->authenticated = true;
         }
         return $this->authenticated;

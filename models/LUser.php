@@ -156,4 +156,22 @@ class LUser extends CActiveRecord
         ));
     }
 
+    /**
+     * Perform the creation of new user
+     * Return created user or null if creation failed
+     * @return LUser created user instance
+     */
+    public static function create()
+    {
+        $user = new LUser;
+        if (!$user->save()) {
+            return null;
+        }
+        $account = LAccount::create('onetime', $user->uid, null, $user->uid);
+        if (!isset($account)) return null;
+        $account->hidden = 1;
+        if (!$account->save()) return null;
+
+        return $user;
+    }
 }

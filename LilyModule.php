@@ -267,6 +267,26 @@ class LilyModule extends CWebModule {
     }
 
     /**
+     * Returns services settings declared in the authorization classes.
+     * For perfomance reasons it uses Yii::app()->cache to store settings array.
+     * @return array services settings.
+     */
+    public function getServices() {
+        if (Yii::app()->hasComponent('cache'))
+            $services = Yii::app()->cache->get('Lily.services');
+        if (!isset($services) || !is_array($services)) {
+            $_services = Yii::app()->eauth->getServices();
+            $services = array();
+            foreach($_services as $k => $service){
+                if($service->type != 'hidden') $services[$k] = $service;
+            }
+            if (Yii::app()->hasComponent('cache'))
+                Yii::app()->cache->set('Lily.services', $services);
+        }
+        return $services;
+    }
+
+    /**
      * This function inits LilyModule instance
      */
     public function init() {

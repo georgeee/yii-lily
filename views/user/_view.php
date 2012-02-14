@@ -19,7 +19,8 @@ $this->widget('zii.widgets.CDetailView', array(
             'value' => $this->widget('zii.widgets.grid.CGridView', array(
                 'dataProvider' => new CActiveDataProvider('LAccount', array(
                     'criteria' => array(
-                        'condition' => 'uid=' . $data->uid,
+                        'condition' => 'uid=:uid AND hidden=0',
+                        'params' => array(':uid' => $data->uid),
                         'order' => 'created ASC',
                     ),
                 )),

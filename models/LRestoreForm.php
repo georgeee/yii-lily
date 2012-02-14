@@ -45,4 +45,14 @@ class LRestoreForm extends CFormModel
     }
 
 
+    /**
+     * @return array customized attribute labels (name=>label)
+     */
+    public function attributeLabels()
+    {
+        return array(
+            'email' => LilyModule::t("E-mail address"),
+        );
+    }
+
 }
