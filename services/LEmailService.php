@@ -82,14 +82,14 @@ class LEmailService extends EAuthServiceBase implements IAuthService
                     throw new LException("Account was not registered (performRegistration returned nulll)");
                 else {
                     $this->errorCode = self::ERROR_NONE;
-                    $this->attributes['displayId'] = $this->id = $email;
+                    $this->attributes['id'] = $this->attributes['email'] = $this->attributes['displayId'] = $email;
                     $this->authenticated = true;
                 }
             }
         } else {
             $password_hash = LilyModule::instance()->hash($password);
             if ($password_hash == $account->data->password) {
-                $this->attributes['id'] = $email;
+                $this->attributes['id'] = $this->attributes['email'] = $this->attributes['displayId'] = $email;
                 $this->authenticated = true;
                 $this->errorCode = self::ERROR_NONE;
             } else {

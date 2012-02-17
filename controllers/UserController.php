@@ -178,5 +178,15 @@ class UserController extends Controller {
         $this->redirect(isset($redirectUrl)?$redirectUrl:Yii::app()->homeUrl);
     }
 
+
+    public function actionInit($action){
+        if(!LilyModule::instance()->userIniter->isStarted) throw new CHttpException(404);
+        if(($action=='start' && LilyModule::instance()->userIniter->stepId == 0)||($action=='finish' && LilyModule::instance()->userIniter->stepId
+            == LilyModule::instance()->userIniter->count-1)){
+        $this->render('init', array('action'=>$action));
+        }else if($action == 'next'){
+            LilyModule::instance()->userIniter->nextStep();
+        }else throw new CHttpException(404);
+    }
 }
 

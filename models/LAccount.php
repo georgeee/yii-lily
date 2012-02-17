@@ -193,6 +193,7 @@ class LAccount extends CActiveRecord
         $account->id = $id;
         $account->data = $data;
         $account->created = time();
+        $account->hidden = LilyModule::instance()->allServices[$service]->type=='hidden';
         if ($account->save()) {
             if (LilyModule::instance()->enableLogging)
                 Yii::log("LAccount::create($service, $id,..) successfully created new account aid={$account->aid}", CLogger::LEVEL_INFO, 'lily');

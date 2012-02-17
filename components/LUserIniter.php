@@ -21,11 +21,15 @@
  * @property object $step current step object, also could be accessed as $steps[$stepId]
  * @property bool $isStarted is userInit component started or not (if not, lily assumes that user is already inited)
  *
- * @todo show start and finish steps
  * @package application.modules.lily.components
  */
 class LUserIniter extends CApplicationComponent
 {
+    /**
+     * @var string Route to init action of Lily's UserController
+     */
+    public $initRoute = 'lily/user/init';
+
     /**
      * @var bool Whether to show initial step page with common information about next actions
      */
@@ -98,7 +102,7 @@ class LUserIniter extends CApplicationComponent
     {
         if (LilyModule::instance()->enableLogging)
             Yii::log("userIniter: passed step $this->stepId", CLogger::LEVEL_INFO, 'lily');
-        if ($this->stepId < count($this->steps)) {
+        if ($this->stepId < $this->count -1 ) {
             LilyModule::instance()->session->data->userInitData->stepId++;
             LilyModule::instance()->session->save();
             Yii::app()->request->redirect($this->steps[$this->stepId + 1]->page);
@@ -141,20 +145,30 @@ class LUserIniter extends CApplicationComponent
         if (!isset($this->steps)) {
             $count = 0;
             $steps = array();
+            if($this->showStartStep) $steps[$count++] = (object)array(
+                'page' => Yii::app()->createUrl($this->initRoute, array('action'=>'start')),
+                'name' => "Start",
+                'allowed' => array($this->initRoute),
+            );
             foreach (LilyModule::instance()->relations as $name => $relation) {
                 if (isset($relation['onRegister'])) {
                     $onRegister_route = is_array($relation['onRegister']) ? $relation['onRegister'][0] : $relation['onRegister'];
                     $onRegister_query = is_array($relation['onRegister']) ? array_slice($relation['onRegister'], 1) : array();
-                    $steps[++$count] = (object)array(
+                    $steps[$count++] = (object)array(
                         'page' => Yii::app()->createUrl($onRegister_route, $onRegister_query),
                         'name' => $name,
                         'allowed' => array($onRegister_route),
                     );
                 }
             }
+            if($this->showStartStep) $steps[$count++] = (object)array(
+                'page' => Yii::app()->createUrl($this->initRoute, array('action'=>'finish')),
+                'name' => "Finish",
+                'allowed' => array($this->initRoute),
+            );
             LilyModule::instance()->session->data->userInitData = new stdClass;
             LilyModule::instance()->session->data->userInitData->steps = $this->_steps = $steps;
-            LilyModule::instance()->session->data->userInitData->stepId = $this->_stepId = 1;
+            LilyModule::instance()->session->data->userInitData->stepId = $this->_stepId = 0;
             LilyModule::instance()->session->data->userInitData->count = $this->_count = $count;
             LilyModule::instance()->session->save();
         }

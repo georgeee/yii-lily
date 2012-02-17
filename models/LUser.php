@@ -169,8 +169,6 @@ class LUser extends CActiveRecord
         }
         $account = LAccount::create('onetime', $user->uid, null, $user->uid);
         if (!isset($account)) return null;
-        $account->hidden = 1;
-        if (!$account->save()) return null;
 
         return $user;
     }

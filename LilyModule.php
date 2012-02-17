@@ -48,6 +48,8 @@
  * @property LSession $session current session object, null if user isn't authenticated
  * @property stdClass $sessionData curent session data, empty object (new stdClass) if user isn't authenticated
  * @property string $assetsUrl url to assets folder, where assests of the module are published
+ * @property array $services EAuth services settings (for all except hidden)
+ * @property array $allServices EAuth services settings (for all services including hidden)
  *
  * @package application.modules.lily
  */
@@ -159,7 +161,7 @@ class LilyModule extends CWebModule {
     /**
      * Method, that raises user merge event accros the class
      * (and processes needed actions, like specified in onUserMerge, see $relations property of this class)
-     * @param LMergeEvent $eventUser merge event instance, with $oldUid and $newUid properties specified
+     * @param LMergeEvent $event User merge event instance, with $oldUid and $newUid properties specified
      * @throws LException
      */
     public function onUserMerge(LMergeEvent $event) {
@@ -269,19 +271,39 @@ class LilyModule extends CWebModule {
     /**
      * Returns services settings declared in the authorization classes.
      * For perfomance reasons it uses Yii::app()->cache to store settings array.
+     *
+     * It returns all services except hidden
      * @return array services settings.
      */
     public function getServices() {
         if (Yii::app()->hasComponent('cache'))
             $services = Yii::app()->cache->get('Lily.services');
         if (!isset($services) || !is_array($services)) {
-            $_services = Yii::app()->eauth->getServices();
+            $_services = $this->allServices;
             $services = array();
             foreach($_services as $k => $service){
                 if($service->type != 'hidden') $services[$k] = $service;
             }
             if (Yii::app()->hasComponent('cache'))
                 Yii::app()->cache->set('Lily.services', $services);
+        }
+        return $services;
+    }
+
+    /**
+     * Returns services settings declared in the authorization classes.
+     * For perfomance reasons it uses Yii::app()->cache to store settings array.
+     *
+     * It returns absolutely all services (including hidden)
+     * @return array services settings.
+     */
+    public function getAllServices() {
+        if (Yii::app()->hasComponent('cache'))
+            $services = Yii::app()->cache->get('Lily.allServices');
+        if (!isset($services) || !is_array($services)) {
+            $services = Yii::app()->eauth->getServices();
+            if (Yii::app()->hasComponent('cache'))
+                Yii::app()->cache->set('Lily.allServices', $services);
         }
         return $services;
     }
