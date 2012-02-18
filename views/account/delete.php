@@ -1,3 +1,4 @@
+<h1>Delete an account</h1>
 <div>
     <form action="" method='post'  >
         <p class="note">Do you really want to delete your account <?php echo $account->displayId; ?> (service <?php $account->serviceName; ?>)?</p>

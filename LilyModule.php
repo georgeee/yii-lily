@@ -102,11 +102,27 @@ class LilyModule extends CWebModule {
      */
     public $allowedRoutes = array();
 
+    /**
+     * @var string prefix to module uri (e.g. lily prefix means all actions of the module have uris like 'lily/<controllerId>/<actionId>)
+     */
+    public $routePrefix = 'lily';
+
+
     protected $_relations = null;
     protected $_userRelations = array();
     protected $_session = null;
     protected static $_instance;
-    
+
+/**
+ * Return absolute route to module's route (e.g. for putting it in Yii::app()->urlManager->createUrl() method)
+ * @static
+ * @param string $name Route (relative to module path)
+ * @return string Absolute route
+ */
+    public static function route($name){
+        return self::instance()->routePrefix.'/'.$name;
+    }
+
     /**
      * This function returns current instance of LilyModule class
      * 

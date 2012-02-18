@@ -6,9 +6,9 @@ $this->widget('zii.widgets.CDetailView', array(
     'attributes' => array(
         'uid',
         'name',
-        'deleted',
-        'active',
-        'inited',
+//        'deleted',
+//        'active',
+//        'inited',
         array(
             'label' => LilyModule::t('Accounts'),
             'type' => 'raw',

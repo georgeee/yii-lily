@@ -39,8 +39,7 @@ class m120131_112629_lily_tables_create extends CDbMigration {
             'token' => 'string NOT NULL',
             'created' => 'integer',
         ), 'ENGINE=InnoDB');
-        $this->createIndex('email', '{{lily_email_account}}', 'email', true);
-        $this->createIndex('service_user', '{{lily_account}}', 'service_id,user_id', true);
+        $this->createIndex('service_id', '{{lily_account}}', 'service,id', true);
     }
 
     public function down() {

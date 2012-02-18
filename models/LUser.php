@@ -108,7 +108,9 @@ class LUser extends CActiveRecord
     public function relations()
     {
         //Empty array of default relations, possibly later it will contain something...
-        $relations = array();
+        $relations = array(
+            'reciever' => array(self::BELONGS_TO, 'LUser', 'deleted'),
+        );
         return array_merge($relations, LilyModule::instance()->userRelations);
     }
 

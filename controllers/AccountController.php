@@ -14,13 +14,24 @@
  * @package application.modules.lily.controllers
  */
 class AccountController extends Controller {
+    /**
+     * @var string the name of the default action
+     */
+    public $defaultAction='list';
 
+/**
+ * Declares filters for the controller
+ * @return array filters
+ */
     public function filters() {
         return array(
             'accessControl',
         );
     }
-
+/**
+ * Declares access rules for the controller
+ * @return array access rules
+ */
     public function accessRules() {
         return array(
             array('allow',
@@ -53,12 +64,12 @@ class AccountController extends Controller {
             ),
         );
     }
-
-    public function actionIndex() {
-        $this->redirect($this->createUrl('list'));
-    }
-
-    public function actionBind() {
+/**
+ * Bind action
+ * @param string $service Service, which is being authenticated
+ * @param boolean $rememberMe Whether to remember user
+ */
+    public function actionBind($service = null, $rememberMe = false) {
         $id_prefix = 'LAuthWidget-form-';
         if (isset($_POST['ajax']) && substr($_POST['ajax'], 0, strlen($id_prefix)) == $id_prefix) {
             $model = new LLoginForm;
@@ -68,11 +79,11 @@ class AccountController extends Controller {
         $model_new = false;
 
         $services = LilyModule::instance()->services;
-        if (Yii::app()->getRequest()->getQuery('service') != null) {
+        if ($service != null) {
             $_services = $services;
             unset($_services['email']);
             $model = new LLoginForm('', array_keys($_services));
-            $model->attributes = array('service' => Yii::app()->getRequest()->getQuery('service'), 'rememberMe' => Yii::app()->getRequest()->getQuery('rememberMe'));
+            $model->attributes = array('service' => $service, 'rememberMe' => $rememberMe);
         } else {
             $model = new LLoginForm('', array_keys($services));
             // if it is ajax validation request
@@ -132,10 +143,13 @@ class AccountController extends Controller {
         }
         $this->render('bind', array('model' => $model, 'services' => $services));
     }
-
-    public function actionMerge() {
-        $merge_id = Yii::app()->request->getQuery('merge_id');
-        if (!isset($merge_id) || !isset(LilyModule::instance()->sessionData->merge[$merge_id]))
+/**
+ * Merge action
+ * @param string $merge_id Merge id string (randomly generated token)
+ * @throws CHttpException 404 if merge_id is wrong
+ */
+    public function actionMerge($merge_id) {
+        if (!isset(LilyModule::instance()->sessionData->merge[$merge_id]))
             throw new CHttpException(404, LilyModule::t('Incorrect merge id specified!'));
         $accept = Yii::app()->request->getPost('accept');
         if (isset($accept)) {
@@ -145,7 +159,9 @@ class AccountController extends Controller {
         }
         $this->render('merge', array('user' => LUser::model()->findByPk(LilyModule::instance()->sessionData->merge[$merge_id])));
     }
-
+/**
+ * List action
+ */
     public function actionList() {
         $uid = Yii::app()->request->getQuery('uid', Yii::app()->user->id);
         $dataProvider = new CActiveDataProvider('LAccount', array(
@@ -160,7 +176,11 @@ class AccountController extends Controller {
                 ));
         $this->render('list', array('accountProvider' => $dataProvider, 'user' => LUser::model()->findByPk($uid)));
     }
-
+/**
+ * Delete action
+ * @param integer $aid Account Id
+ * @param string $accept If $accept is set, we will act the deletion of account
+ */
     public function actionDelete($aid, $accept = null) {
         $account = LAccount::model()->findByPk($aid);
         if (isset($accept)) {
@@ -169,7 +189,11 @@ class AccountController extends Controller {
         }
         $this->render('delete', array('account' => $account));
     }
-
+/**
+ * Edit action
+ * @param integer $aid Account Id
+ * @throws CHttpException 404 if service of the account is 'email'
+ */
     public function actionEdit($aid){
         $account = LAccount::model()->findByPk($aid);
         if($account->service == 'email'){
@@ -189,7 +213,9 @@ class AccountController extends Controller {
             $this->render('edit', array('model' => $model, 'account'=>$account));
         }else throw new CHttpException(404);
     }
-
+/**
+ * Restore action
+ */
     public function actionRestore(){
         $model = new LRestoreForm;
         if (isset($_POST['ajax']) && $_POST['ajax'] === 'restore-form') {

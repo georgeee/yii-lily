@@ -25,10 +25,6 @@
  */
 class LUserIniter extends CApplicationComponent
 {
-    /**
-     * @var string Route to init action of Lily's UserController
-     */
-    public $initRoute = 'lily/user/init';
 
     /**
      * @var bool Whether to show initial step page with common information about next actions
@@ -142,13 +138,14 @@ class LUserIniter extends CApplicationComponent
         $this->_isStarted = true;
         if (LilyModule::instance()->enableLogging)
             Yii::log("userIniter started", CLogger::LEVEL_INFO, 'lily');
+        $initRoute = LilyModule::route('user/init');
         if (!isset($this->steps)) {
             $count = 0;
             $steps = array();
             if($this->showStartStep) $steps[$count++] = (object)array(
-                'page' => Yii::app()->createUrl($this->initRoute, array('action'=>'start')),
+                'page' => Yii::app()->createUrl($initRoute, array('action'=>'start')),
                 'name' => "Start",
-                'allowed' => array($this->initRoute),
+                'allowed' => array($initRoute),
             );
             foreach (LilyModule::instance()->relations as $name => $relation) {
                 if (isset($relation['onRegister'])) {
@@ -162,9 +159,9 @@ class LUserIniter extends CApplicationComponent
                 }
             }
             if($this->showStartStep) $steps[$count++] = (object)array(
-                'page' => Yii::app()->createUrl($this->initRoute, array('action'=>'finish')),
+                'page' => Yii::app()->createUrl($initRoute, array('action'=>'finish')),
                 'name' => "Finish",
-                'allowed' => array($this->initRoute),
+                'allowed' => array($initRoute),
             );
             LilyModule::instance()->session->data->userInitData = new stdClass;
             LilyModule::instance()->session->data->userInitData->steps = $this->_steps = $steps;
@@ -176,7 +173,7 @@ class LUserIniter extends CApplicationComponent
         Yii::log("userIniter started with route $route", CLogger::LEVEL_INFO, 'lily');
         if (!in_array($route, $this->step->allowed)
             && !in_array($route, LilyModule::instance()->allowedRoutes)
-            && !in_array($route, array('lily/user/logout'))
+            && !in_array($route, array(LilyModule::route('user/logout')))
         ) {
             Yii::app()->request->redirect($this->step->page);
         }

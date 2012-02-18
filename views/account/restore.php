@@ -1,3 +1,5 @@
+<h1>Restore controll to account</h1>
+
 <p>Please type your e-mail address:</p>
 
 <div class="form">

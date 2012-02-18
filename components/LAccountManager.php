@@ -58,15 +58,6 @@ class LAccountManager extends CApplicationComponent
      */
     public $adminEmail = 'admin@example.org';
 
-    /**
-     * @var string Route to activate action
-     */
-    public $activationUrl = 'lily/user/activate';
-
-    /**
-     * @var string Route to activate action
-     */
-    public $onetimeUrl = 'lily/user/onetime';
 
     /**
      * @var integer Timeout, after that activation will be rejected, even if code is clear
@@ -155,7 +146,7 @@ If you haven\'t entered this email on {siteName}, than just ignore this message.
 <br />
 Yours respectfully,<br />
 administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteUrl(''), '{siteName}' => Yii::app()->name,
-                '{activationUrl}' => Yii::app()->createAbsoluteUrl($this->activationUrl, array('code' => $code->code)))), 'text/html');
+                '{activationUrl}' => Yii::app()->createAbsoluteUrl(LilyModule::route('user/activate'), array('code' => $code->code)))), 'text/html');
         $message->addTo($code->email);
         $message->from = $this->adminEmail;
         $recipient_count = Yii::app()->mail->send($message);
@@ -385,7 +376,7 @@ If it was you, open <a href="{restoreUrl}">link</a></li> in your browser in orde
 <br />
 Yours respectfully,<br />
 administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteUrl(''), '{siteName}' => Yii::app()->name,
-                '{restoreUrl}' => Yii::app()->createAbsoluteUrl($this->onetimeUrl, array('token' => $onetime->token)))), 'text/html');
+                '{restoreUrl}' => Yii::app()->createAbsoluteUrl(LilyModule::route('user/onetime'), array('token' => $onetime->token)))), 'text/html');
         $message->addTo($account->id);
         $message->from = $this->adminEmail;
         $recipient_count = Yii::app()->mail->send($message);

@@ -14,9 +14,12 @@
 class LPasswordChangeForm extends CFormModel
 {
     /**
-     * @var string email field
+     * @var string password field
      */
     public $password;
+    /**
+     * @var string repeat password field
+     */
     public $password_repeat;
 
 
@@ -32,7 +35,10 @@ class LPasswordChangeForm extends CFormModel
             array('password_repeat', 'compare', 'compareAttribute' => 'password'),
         );
     }
-
+/**
+ * Declares the attribute labels
+ * @return array attribute labels
+ */
     public function attributeLabels()
     {
         return array(

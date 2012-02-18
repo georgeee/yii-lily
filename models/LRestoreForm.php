@@ -17,6 +17,9 @@ class LRestoreForm extends CFormModel
      * @var string email field
      */
     public $email;
+    /**
+     * @var LAccount account of the email if it was successfully validated
+     */
     public $account;
 
     /**

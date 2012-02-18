@@ -52,6 +52,8 @@
             <div class="emailFieldsDiv">
                 <p class="note">Use fields Email, Password when method "E-mail" was selected</p>
 
+                <p class="note">If you forgot your password, you can restore it using <a href="<?php echo Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'));?>">this page</a>.</p>
+
                 <p class="note">Fields with <span class="required">*</span> are required.</p>
 
                 <div class="row">
@@ -66,6 +68,7 @@
                     <?php echo $form->error($model, 'password'); ?>
                     <p class="hint">
                         In password you can use lowercase and uppercase latin letters, characters (excluding quotes) &quot;-.,;=+~/\[]{}!@#$%^*&amp;()_|&quot; and simple whitespace.
+                        <br /> Password's length must be from 8 to 32 characters.
                     </p>
                 </div>
             </div>

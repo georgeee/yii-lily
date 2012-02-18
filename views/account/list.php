@@ -1,3 +1,5 @@
+<h1>Accounts</h1>
+
 <?php
 Yii::app()->clientScript->registerCssFile(LilyModule::instance()->getAssetsUrl() . "/lily.css");
 ?>
