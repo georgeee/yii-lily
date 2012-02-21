@@ -19,13 +19,13 @@ Lily requires several extensions to be installed:
  * [Yii mail (in order to send notification and activation mails for email authentication type)](http://www.yiiframework.com/extension/mail/ "Yii mail extension")
  * [EAuth][]
 
- Basic installation
- ------------------------------------
+Basic installation
+------------------------------------
  
  1. Download extensions from previous paragraph and put 'em to protected/extensions
- 2. Configure required extensions:
+ 2. Configure required extensions and lily module :
  
- ```php
+```php
  	
  	...
  	
@@ -119,5 +119,23 @@ Lily requires several extensions to be installed:
 	),
 	...
 ```
+ 3. Configure app menu
 
+Configurations
+------------------------------
 
+Lily offers you these configurations:
+
+```php
+
+```
+
+Example project
+------------------------------
+
+<..>
+
+License
+-------------------------------
+
+The module was released under the [New BSD License](http://www.opensource.org/licenses/bsd-license.php), so you'll find the latest version on [GitHub](https://github.com/georgeee/yii-lily).
