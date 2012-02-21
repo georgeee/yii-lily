@@ -24,6 +24,7 @@ Lily requires several extensions to be installed:
  
  1. Download extensions from previous paragraph and put 'em to protected/extensions
  2. Configure required extensions:
+ 
  ```php
  	
  	...
@@ -118,3 +119,5 @@ Lily requires several extensions to be installed:
 	),
 	...
 ```
+
+
