@@ -124,8 +124,8 @@ Basic installation
  3. Migrate
  Migrate your DB tables using one of the following ways:
  
- * copy m120131_112629_lily_tables_create.php to your protected/migrations folder and execute "protected/yii migrate" from yii root (take a look at migrations section in Yii tutorial if you are not familar with that)
- * update your DB manually (lily.mysql.sql for mysql and lily.sqlite.sql for sqlite)
+ * copy data/m120131_112629_lily_tables_create.php to your protected/migrations folder and execute "protected/yii migrate" from yii root (take a look at migrations section in Yii tutorial if you are not familar with that)
+ * update your DB manually (data/lily.mysql.sql for mysql and data/lily.sqlite.sql for sqlite)
  
  4. Configure app menu
 
@@ -178,7 +178,27 @@ Lily offers you these configurations:
 	),
 ```
 
-Example project
+I think, that these configurations are quite understandable (see comments on the right, if not - sources or write to me), I will only describe 'relations' property:
+
+Property is array with such elements:
+
+```php
+$relationName => array(
+	'relation' => $relation,
+	'onUserMerge' => $onUserMerge,
+	'onRegister' =>  $onRegister,
+	'callback' => $callback,
+),
+```
+
+$relationName - name of relations, as in ActiveRecord relations()
+$relation - ActiveRecord relation in format, specified by  relations()
+$onUserMerge - behavoiur on user merging. Can be: auto (just updates indexies from old uid to new one), event (raises an event accross the relation model object (or objects)), callback (executes the callback, specified by 'callback' property of relation)
+$callback - see above
+
+Also, I hardly recommend you to take a look at sample project below. 
+
+Sample project
 ------------------------------
 
 <..>
