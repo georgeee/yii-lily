@@ -201,7 +201,7 @@ Also, I hardly recommend you to take a look at sample project below.
 Sample project
 ------------------------------
 
-<..>
+[Lily sample project] (https://github.com/georgeee/yii-lily-sample)
 
 License
 -------------------------------
