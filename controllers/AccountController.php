@@ -28,6 +28,32 @@ class AccountController extends Controller {
             'accessControl',
         );
     }
+    /**
+     * Just an expression handler for accessRules()
+     * @static
+     * @param $user
+     * @param $rule
+     * @return bool
+     */
+    public static function allowListOwnAccessRule($user, $rule) {
+        $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
+        return $uid == $user->id;
+    }
+
+    /**
+     * Just an expression handler for accessRules()
+     * @static
+     * @param $user
+     * @param $rule
+     * @return bool
+     */
+    public static function allowModifyOwnAccessRule($user, $rule) {
+        $aid = Yii::app()->request->getParam('aid');
+        $account = LAccount::model()->findByPk($aid);
+        if($account==null) return false;
+        return $account->uid == $user->id;
+    }
+
 /**
  * Declares access rules for the controller
  * @return array access rules
@@ -40,20 +66,12 @@ class AccountController extends Controller {
             ),
             array('allow',
                 'actions' => array('list'),
-                'expression' => function($user, $rule) {
-                    $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
-                    return $uid == $user->id;
-                },
+                'expression' => array(__CLASS__, 'allowListOwnAccessRule'),
                 'users' => array('@'),
             ),
             array('allow',
                 'actions' => array('delete', 'edit'),
-                'expression' => function($user, $rule) {
-                    $aid = Yii::app()->request->getParam('aid');
-                    $account = LAccount::model()->findByPk($aid);
-                    if($account==null) return false;
-                    return $account->uid == $user->id;
-                },
+                'expression' => array(__CLASS__, 'allowModifyOwnAccessRule'),
             ),
             array('allow',
                 'actions' => array('list', 'delete', 'index', 'edit'),

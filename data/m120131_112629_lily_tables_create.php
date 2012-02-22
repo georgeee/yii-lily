@@ -3,12 +3,15 @@
 class m120131_112629_lily_tables_create extends CDbMigration {
 
     public function up() {
+        $options = null;
+        if($this->dbConnection->driverName == 'mysql') $options = 'ENGINE=InnoDB';
+
         $this->createTable('{{lily_user}}', array(
             'uid' => 'pk',
             'deleted' => 'integer',
             'active' => 'boolean',
             'inited' => 'boolean',
-        ), 'ENGINE=InnoDB');
+        ), $options);
         $this->createTable('{{lily_account}}', array(
             'aid' => 'pk',
             'uid' => 'integer',
@@ -17,7 +20,7 @@ class m120131_112629_lily_tables_create extends CDbMigration {
             'hidden' => 'boolean',
             'data' => 'binary',
             'created' => 'integer',
-        ), 'ENGINE=InnoDB');
+        ), $options);
         $this->createTable('{{lily_email_account_activation}}', array(
             'code_id' => 'pk',
             'uid' => 'integer',
@@ -25,20 +28,20 @@ class m120131_112629_lily_tables_create extends CDbMigration {
             'password' => 'string NOT NULL',
             'code' => 'string NOT NULL',
             'created' => 'integer',
-        ), 'ENGINE=InnoDB');
+        ), $options);
         $this->createTable('{{lily_session}}', array(
             'sid' => 'pk',
             'aid' => 'integer',
             'data' => 'binary',
             'ssid' => 'string NOT NULL',
             'created' => 'integer',
-        ), 'ENGINE=InnoDB');
+        ), $options);
         $this->createTable('{{lily_onetime}}', array(
             'tid' => 'pk',
             'uid' => 'integer',
             'token' => 'string NOT NULL',
             'created' => 'integer',
-        ), 'ENGINE=InnoDB');
+        ), $options);
         $this->createIndex('service_id', '{{lily_account}}', 'service,id', true);
     }
 

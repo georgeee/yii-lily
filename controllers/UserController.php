@@ -29,6 +29,19 @@ class UserController extends Controller {
             'accessControl',
         );
     }
+
+    /**
+     * Just an expression handler for accessRules()
+     * @static
+     * @param $user
+     * @param $rule
+     * @return bool
+     */
+    public static function allowOwnAccessRule($user, $rule){
+        $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
+        return $uid == $user->id;
+    }
+
     /**
      * Declares access rules for the controller
      * @return array access rules
@@ -37,10 +50,7 @@ class UserController extends Controller {
         return array(
             array('allow',
                 'actions' => array('edit', 'view', 'index'),
-                'expression' => function($user, $rule) {
-                    $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
-                    return $uid == $user->id;
-                },
+                'expression' => array(__CLASS__, 'allowOwnAccessRule'),
                 'users' => array('@'),
             ),
             array('allow',
