@@ -54,7 +54,7 @@ class LAccountManager extends CApplicationComponent
     public $sendMail = true;
 
     /**
-     * @var string Email to put it in mails (From subject)
+     * @var string Email to put it in mails (From field)
      */
     public $adminEmail = 'admin@example.org';
 

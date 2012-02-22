@@ -9,15 +9,23 @@
 
 /**
  * Lily Module
- * This module was started in february 2012 by George Agapov aka georgeee and
- * provides functionalities of user managment, but not like other yii modules.
- * It uses eauth extension by Maxim Zemskov (https://github.com/Nodge/yii-eauth)
- * and provides user auth by openID|oauth|oauth2 protocols (see module description)
- * or just by email-password pair.
- * 
- * And, two words about the name - module was called in tribute of one beautiful
- * russian poem, written by Vladimir Mayakovsky, Lilechka (russian: Лилечка). If
- * you speak russian, I really suggest you to read it.
+ *
+ *
+ * Lily is an Yii module, that provides you user managment funtionalities.
+ * But not like others, it allows you to authenticate using various authentivation services
+ * (e.g. google or twitter, it uses EAuth extension (https://github.com/Nodge/yii-eauth) for this purpose)
+ * and, as usual email-password pair.
+ *
+ * Out-of-box it provides only a sceleton for managimg user data (through active realtions),
+ * it doesn't contain any fields as name or birthday, so you are free to create exactly what you want to.
+ * It supports binding two or more accounts (there are no restrictions, you can bind even a thousand
+ * email or google accounts to one user) and also it supports merging two users in one
+ * (this action will be suggested if you try to bind an account, that was already bound to another user).
+ * Of course, you will be able to set a handler on user merge event in order to update your tables (e.g. change the owner of content).
+ *
+ * And, two words about the name - module was called in tribute of one beautiful russian poem, written 
+ * by Vladimir Mayakovsky, Lilechka (russian: Лилечка). If you speak russian, I really suggest you to read it.
+ *
  * 
  *
  * @property LAccountManager $accountManager account manager instance
@@ -98,7 +106,7 @@ class LilyModule extends CWebModule {
     public $userNameFunction = null;
 
     /**
-     * @var array routes, that are allowed during any step
+     * @var array routes, that are allowed during any init step
      */
     public $allowedRoutes = array();
 
