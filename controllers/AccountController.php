@@ -76,6 +76,7 @@ class AccountController extends Controller {
             array('allow',
                 'actions' => array('list', 'delete', 'index', 'edit'),
                 'roles' => array('admin'),
+                'users' => array('@'),
             ),
             array('deny',
                 'actions' => array('bind', 'delete', 'index', 'list', 'merge'),

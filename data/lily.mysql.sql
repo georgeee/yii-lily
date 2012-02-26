@@ -115,9 +115,7 @@ CREATE TABLE IF NOT EXISTS `tbl_migration` (
 
 INSERT INTO `tbl_migration` (`version`, `apply_time`) VALUES
 ('m000000_000000_base', 1329929078),
-('m120131_112629_lily_tables_create', 1329929087),
-('m120206_173608_create_profile_table', 1329929087),
-('m120207_125421_create_user_tag_tables', 1329929088);
+('m120131_112629_lily_tables_create', 1329929087);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

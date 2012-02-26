@@ -6,8 +6,6 @@ CREATE TABLE 'tbl_migration' (
 );
 INSERT INTO "tbl_migration" VALUES('m000000_000000_base',1329929588);
 INSERT INTO "tbl_migration" VALUES('m120131_112629_lily_tables_create',1329929590);
-INSERT INTO "tbl_migration" VALUES('m120206_173608_create_profile_table',1329929590);
-INSERT INTO "tbl_migration" VALUES('m120207_125421_create_user_tag_tables',1329929590);
 CREATE TABLE 'tbl_lily_user' (
 	"uid" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	"deleted" integer,

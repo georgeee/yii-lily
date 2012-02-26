@@ -208,9 +208,9 @@ class LilyModule extends CWebModule {
                                 throw new LException("Wrong data for MANY_MANY");
                             $table = $matches[1];
                             $keys = preg_split('/\s*,\s*/', $matches[2], -1, PREG_SPLIT_NO_EMPTY);
-                            if (substr($keys[1], 0, 2) == 't.')
-                                $keys[1] = substr($keys[1], 2);
-                            Yii::app()->db->createCommand()->update($table, array($keys[1] => $event->newUid), $keys[1] . '=:oldUserId', array(':oldUserId' => $event->oldUid));
+                            if (substr($keys[0], 0, 2) == 't.')
+                                $keys[0] = substr($keys[0], 2);
+                            Yii::app()->db->createCommand()->update($table, array($keys[0] => $event->newUid), $keys[0] . '=:oldUserId', array(':oldUserId' => $event->oldUid));
                             break;
                     }
                 }else if ($type == 'event') {

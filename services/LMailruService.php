@@ -46,7 +46,7 @@ class LMailruService extends MailruOAuthService
         $this->attributes['email'] = $info->email;
         $this->attributes['city'] = $info->location->city->name;
         $this->attributes['country'] = $info->location->country->name;
-        $this->attributes['birthday'] = Yii::app()->dateFormatter->formatDateTime(CDateTimeParser::parse($info->birthday, 'dd.MM.yyyy'), 'medium', NULL);
+        $this->attributes['birthday'] = CDateTimeParser::parse($info->birthday, 'dd.MM.yyyy');
 
     }
 

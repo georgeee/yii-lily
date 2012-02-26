@@ -56,6 +56,7 @@ class UserController extends Controller {
             array('allow',
                 'actions' => array('edit', 'view', 'index', 'list'),
                 'roles' => array('admin'),
+                'users' => array('@'),
             ),
             array('deny',
                 'actions' => array('list', 'edit', 'view', 'index'),

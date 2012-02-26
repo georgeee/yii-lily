@@ -49,7 +49,7 @@ class LYandexService extends YandexOpenIDService
         else
             $this->attributes['displayId'] = $this->id;
         if (isset($this->attributes['birthday']) && !empty($this->attributes['birthday']))
-            $this->attributes['birthday'] = Yii::app()->dateFormatter->formatDateTime(CDateTimeParser::parse($this->attributes['birthday'], 'yyyy-MM-dd'), 'medium', NULL);
+            $this->attributes['birthday'] = CDateTimeParser::parse($this->attributes['birthday'], 'yyyy-MM-dd');
     }
 
 }

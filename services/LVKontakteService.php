@@ -58,7 +58,7 @@ class LVKontakteService extends VKontakteOAuthService
             $count = 0;
             $pos = -1;
             while (($pos = strpos($info->bdate, '.', $pos + 1)) !== false) $count++;
-            $this->attributes['birthday'] = Yii::app()->dateFormatter->formatDateTime(CDateTimeParser::parse($info->bdate, $count == 2 ? 'd.M.yyyy' : 'd.M'), 'medium', NULL);
+            $this->attributes['birthday'] = CDateTimeParser::parse($info->bdate, $count == 2 ? 'd.M.yyyy' : 'd.M');
         }
     }
 }
