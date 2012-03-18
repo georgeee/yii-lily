@@ -123,7 +123,7 @@ Basic installation
 ```
  3. Migrate your DB tables using one of the following ways:
  
-     * copy `data/m120131_112629_lily_tables_create.php` to your `protected/migrations` folder and execute `protected/yii migrate` from application root (take a look at migrations section in Yii tutorial if you are not familar with that)
+     * run `yiic migrate --migrationPath=application.modules.lily.migrations --migrationTable=lily_migration` (take a look at migrations section in Yii tutorial if you are not familar with that)
      * update your DB manually (`data/lily.mysql.sql` for mysql and `data/lily.sqlite.sql` for sqlite)
  
  4. Configure app menu (see sample project for example).
