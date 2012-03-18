@@ -3,13 +3,13 @@
 Lily Module
 --------------------------------------
 
-Lily is an Yii module, that provides you user managment funtionalities. But not like others, it allows you to authenticate using various authentivation services (e.g. google or twitter, it uses [EAuth][] extension for this purpose) and, as usual email-password pair.
+Lily is an Yii module that provides user managment funtionality. It allows you to authenticate using various services e.g. Google or Twitter. Module uses [EAuth][] extension in order to achieve it. Also it supports simple authentication via email-password pair.
 
-Out-of-box it provides only a sceleton for managimg user data (through active realtions), it doesn't contain any fields as name or birthday, so you are free to create exactly what you want to.
+Out of the box it only provides only a skeleton for user data management through AR realtions. It doesn't contain any fields such as name or birthday. You're free to create exactly what you want to.
 
-It supports binding two or more accounts (there are no restrictions, you can bind even a thousand email or google accounts to one user) and also it supports merging two users in one (this action will be suggested if you try to bind an account, that was already bound to another user). Of course, you will be able to set a handler on user merge event in order to update your tables (e.g. change the owner of content).
+When using this module user can have multiple ways to authenticate (e.g. twitter + email-password). Also you can merge two user accounts into a single one. This action will be suggested if you're trying to use credentials that already were used by another user. You will be able to set a handler on the user merge event in order to update your tables (for example, to change the owner of content).
 
-And, two words about the name - module was called in tribute of one beautiful russian poem, written by Vladimir Mayakovsky, Lilechka (russian: Лилечка). If you speak russian, I really suggest you to read it.
+Module name is a tribute to one beautiful Russian poem written by Vladimir Mayakovsky and called Lilechka (Лилечка). If you speak Russian, I really suggest you to read it.
 
 Requirements
 --------------------------------------
@@ -24,8 +24,8 @@ Lily requires several extensions to be installed:
 Basic installation
 ------------------------------------
  
- 1. Download extensions from previous paragraph and put 'em to protected/extensions
- 2. Configure required extensions and lily module :
+ 1. Download extensions listed above and put them to `protected/extensions`.
+ 2. Configure required extensions and lily module:
  
 ```php
  	
@@ -121,18 +121,17 @@ Basic installation
 	),
 	...
 ```
- 3. Migrate
- Migrate your DB tables using one of the following ways:
+ 3. Migrate your DB tables using one of the following ways:
  
-     * copy data/m120131_112629_lily_tables_create.php to your protected/migrations folder and execute "protected/yii migrate" from yii root (take a look at migrations section in Yii tutorial if you are not familar with that)
-     * update your DB manually (data/lily.mysql.sql for mysql and data/lily.sqlite.sql for sqlite)
+     * copy `data/m120131_112629_lily_tables_create.php` to your `protected/migrations` folder and execute `protected/yii migrate` from application root (take a look at migrations section in Yii tutorial if you are not familar with that)
+     * update your DB manually (`data/lily.mysql.sql` for mysql and `data/lily.sqlite.sql` for sqlite)
  
- 4. Configure app menu (see sample project for example)
+ 4. Configure app menu (see sample project for example).
 
-Configurations
+Configuration
 ------------------------------
 
-Lily offers you these configurations:
+Lily offers you these configuration options:
 
 ```php
 	'modules'=>array(
