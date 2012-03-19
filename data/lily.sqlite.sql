@@ -34,7 +34,8 @@ CREATE TABLE 'tbl_lily_session' (
 	"aid" integer,
 	"data" blob,
 	"ssid" varchar(255) NOT NULL,
-	"created" integer
+	"created" integer,
+	"uid" integer
 );
 CREATE TABLE 'tbl_lily_onetime' (
 	"tid" integer PRIMARY KEY AUTOINCREMENT NOT NULL,

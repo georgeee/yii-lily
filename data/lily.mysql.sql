@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS `tbl_lily_session` (
   `data` blob,
   `ssid` varchar(255) NOT NULL,
   `created` int(11) DEFAULT NULL,
+  `uid` int(11) DEFAULT NULL,
   PRIMARY KEY (`sid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
