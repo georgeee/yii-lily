@@ -281,7 +281,7 @@ class LilyModule extends CWebModule {
      * @return LUser
      */
     public function getUser() {
-        return isset($this->_session->account->user) ? $this->_session->account->user : null;
+        return isset($this->_session->user) ? $this->_session->user : null;
     }
 
     /**
@@ -360,8 +360,7 @@ class LilyModule extends CWebModule {
                 if (isset($session) && $session->ssid == $ssid) {
                     if ($session->created + $this->sessionTimeout >= time()) {
                         $this->_session = $session;
-                        Yii::app()->user->name = $this->_session->account->user->getName($this->userNameFunction);
-                        $this->_session->account->user;
+                        Yii::app()->user->name = $this->user->getName($this->userNameFunction);
                         if (!$this->user->inited)
                             $this->userIniter->start();
                         $logout = false;

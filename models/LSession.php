@@ -52,7 +52,7 @@ class LSession extends CActiveRecord
     public function rules()
     {
         return array(
-            array('aid, created', 'safe', 'on' => 'search'),
+            array('aid, uid, created', 'safe', 'on' => 'search'),
         );
     }
 
@@ -63,6 +63,7 @@ class LSession extends CActiveRecord
     {
         return array(
             'account' => array(self::BELONGS_TO, 'LAccount', 'aid'),
+            'user' => array(self::BELONGS_TO, 'LUser', 'uid'),
         );
     }
 
@@ -74,6 +75,7 @@ class LSession extends CActiveRecord
         return array(
             'sid' => LilyModule::t('Session id'),
             'aid' => LilyModule::t('Account id'),
+            'uid' => LilyModule::t('User id'),
             'created' => LilyModule::t('Created'),
             'ssid' => LilyModule::t('Secure session id'),
         );
@@ -133,6 +135,7 @@ class LSession extends CActiveRecord
     {
         $criteria = new CDbCriteria;
         $criteria->compare('aid', $this->aid);
+        $criteria->compare('uid', $this->uid);
         $criteria->compare('created', $this->created);
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,
@@ -140,8 +143,9 @@ class LSession extends CActiveRecord
     }
 
     /**
-     * Launchs new session
+     * Launches new session
      * @param string $aid Account id (or instance)
+     * @param object $data Session data
      * @return LSession created session or null if failed
      */
     public static function create($aid = null, $data = null)
@@ -151,8 +155,11 @@ class LSession extends CActiveRecord
         }
         if (is_object($aid))
             $aid = $aid->aid;
+        $account = LAccount::model()->findByPk($aid);
+        if(!isset($account)) return null;
         $session = new LSession;
         $session->aid = $aid;
+        $session->uid = $account->uid;
         $session->created = time();
         $session->data = $data;
         $session->ssid = LilyModule::instance()->generateRandomString();
