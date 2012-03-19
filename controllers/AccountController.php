@@ -174,7 +174,7 @@ class AccountController extends Controller {
         if (isset($accept)) {
             LilyModule::instance()->accountManager->merge(LilyModule::instance()->sessionData->merge[$merge_id], Yii::app()->user->id);
             unset(LilyModule::instance()->sessionData->merge[$merge_id]);
-            $this->redirect('list');
+            $this->redirect(array('list'));
         }
         $this->render('merge', array('user' => LUser::model()->findByPk(LilyModule::instance()->sessionData->merge[$merge_id])));
     }
@@ -200,11 +200,19 @@ class AccountController extends Controller {
  * @param integer $aid Account Id
  * @param string $accept If $accept is set, we will act the deletion of account
  */
-    public function actionDelete($aid, $accept = null) {
+    public function actionDelete($aid) {
+		$accept = Yii::app()->request->getPost('accept');
         $account = LAccount::model()->findByPk($aid);
+        if(!isset($account)) throw new CHttpException(404);
+        $count = Yii::app()->db->createCommand()
+			->select(array('count(*) as cnt'))->from(LAccount::model()->tableName())
+			->where('uid=:uid AND hidden=0', array(':uid'=>$account->uid))->queryRow(false);
+			
+		$count = $count[0];
+		if($count <= 1) throw new CHttpException(403, LilyModule::t("Impossible to delete last account!"));
         if (isset($accept)) {
             $account->delete();
-            $this->redirect('list');
+            $this->redirect(array('list'));
         }
         $this->render('delete', array('account' => $account));
     }
@@ -215,6 +223,7 @@ class AccountController extends Controller {
  */
     public function actionEdit($aid){
         $account = LAccount::model()->findByPk($aid);
+        if(!isset($account)) throw new CHttpException(404);
         if($account->service == 'email'){
             $model = new LPasswordChangeForm;
             if (isset($_POST['ajax']) && $_POST['ajax'] === 'password-form') {
@@ -226,7 +235,7 @@ class AccountController extends Controller {
                 if($model->validate()){
                     $account->data->password = LilyModule::instance()->hash($model->password);
                     $account->save();
-                    $this->redirect('list');
+                    $this->redirect(array('list'));
                 }
             }
             $this->render('edit', array('model' => $model, 'account'=>$account));
