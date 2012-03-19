@@ -198,7 +198,7 @@ $onUserMerge - behavoiur on user merging. Can be: auto (just updates indexes fro
 
 $callback - see above
 
-Also, I hardly recommend you to take a look at sample project below. 
+Also, I highly recommend you to take a look at sample project below. 
 
 Sample project
 ------------------------------
