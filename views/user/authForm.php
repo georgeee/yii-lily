@@ -50,7 +50,13 @@
     <div class="formDiv">
         <?php if (isset($services['email'])) { ?>
             <div class="emailFieldsDiv">
-                <p class="note">Use fields Email, Password when method "E-mail" was selected</p>
+                <p class="note emailFieldHint">Use fields Email, Password when method "E-mail" was selected</p>                
+                
+                <?php if(LilyModule::instance()->accountManager->registerEmail){ ?>
+                <p class="note">If you're not yet registered, just fill in E-mail and password fields with your e-mail address and a password you want to use. You'll be automaticaly registrated.</p>
+<?php }else{ ?>
+                <p class="note">If you're not yet registered, just go to <?php echo CHtml::link("registration page", array("register")); ?> and pass the registration. Or you can choose another authentication method.</p>
+                <?php }?>
 
                 <p class="note">If you forgot your password, you can restore it using <a href="<?php echo Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'));?>">this page</a>.</p>
 
@@ -66,10 +72,10 @@
                     <?php echo $form->labelEx($model, 'password'); ?>
                     <?php echo $form->passwordField($model, 'password'); ?>
                     <?php echo $form->error($model, 'password'); ?>
-                    <p class="hint">
+<!--                    <p class="hint">
                         In password you can use lowercase and uppercase latin letters, characters (excluding quotes) &quot;-.,;=+~/\[]{}!@#$%^*&amp;()_|&quot; and simple whitespace.
                         <br /> Password's length must be from 8 to 32 characters.
-                    </p>
+                    </p>-->
                 </div>
             </div>
         <?php } ?>

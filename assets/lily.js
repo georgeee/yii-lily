@@ -4,7 +4,7 @@ jQuery(function($) {
         return this.each(function() {
             var el = $(this);
             el.ready(function(){
-                el.find('.authMethodSelectDiv').css('display', 'none')
+                el.find('.authMethodSelectDiv, p.emailFieldHint').css('display', 'none')
                 el.find('.authMethodSwitcherDiv').css('display', 'block')
                 el.find('.authMethodSwitcherDiv .authMethod').click(function(){
                     el.find('.authMethodSwitcherDiv .authMethod').removeClass('selected');

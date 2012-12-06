@@ -44,6 +44,11 @@ class LAccountManager extends CApplicationComponent
     public $restoreMailSubjectCallback = null;
 
     /**
+     * @var boolean Should we register new e-mail account on the fly, or it's necessary to do it on registration page
+     */
+    public $registerEmail = true;
+    
+    /**
      * @var boolean Whether to activate new account
      */
     public $activate = true;

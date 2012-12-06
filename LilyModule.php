@@ -64,6 +64,13 @@
 class LilyModule extends CWebModule {
 
     /**
+     * @static
+     * php callback, that initialises lily
+     */
+    public static function initModule(){
+        Yii::app()->getModule('lily');
+    }
+    /**
      * @var string hash function name (e.g. md5)
      */
     public $hashFunction = 'md5';
@@ -419,7 +426,7 @@ class LilyModule extends CWebModule {
     /**
      * This function simply hashes the string, using function from $hashFunction property
      * and salt from $hashSalt
-     * @param string $string string to hash
+     * @param string $str string to hash
      * @return string hash of string
      */
     public function hash($str) {
@@ -448,7 +455,7 @@ class LilyModule extends CWebModule {
      * Alias for Yii::t()
      * @param string $str string to translate
      * @param array $params params for translation
-     * @param string $dictionary dictionary to use in string translation
+     * @param string $dic dictionary to use in string translation
      * @return string translated string
      */
     public static function t($str = '', $params = array(), $dic = 'default') {

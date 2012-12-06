@@ -72,7 +72,7 @@ class LAuthWidget extends CWidget {
         $this->setId('LAuthWidget-form-' . $this->getId());
         $this->model->id = $this->getId();
         $this->registerAssets();
-        $this->render('authForm', array(
+        return $this->controller->renderPartial('authForm', array(
             'id' => $this->getId(),
             'services' => $this->services,
             'action' => $this->action,

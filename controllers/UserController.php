@@ -14,11 +14,11 @@
  * @package application.modules.lily.controllers
  */
 class UserController extends Controller {
+
     /**
      * @var string the name of the default action
      */
-    public $defaultAction='view';
-
+    public $defaultAction = 'view';
 
     /**
      * Declares filters for the controller
@@ -37,7 +37,7 @@ class UserController extends Controller {
      * @param $rule
      * @return bool
      */
-    public static function allowOwnAccessRule($user, $rule){
+    public static function allowOwnAccessRule($user, $rule) {
         $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
         return $uid == $user->id;
     }
@@ -64,13 +64,12 @@ class UserController extends Controller {
         );
     }
 
-
-/**
- * Login action
- * @param string $service Service, which is being authenticated
- * @param boolean $rememberMe Whether to remember user
- * @throws LException
- */
+    /**
+     * Login action
+     * @param string $service Service, which is being authenticated
+     * @param boolean $rememberMe Whether to remember user
+     * @throws LException
+     */
     public function actionLogin($service = null, $rememberMe = false) {
         $id_prefix = 'LAuthWidget-form-';
         if (isset($_POST['ajax']) && substr($_POST['ajax'], 0, strlen($id_prefix)) == $id_prefix) {
@@ -93,7 +92,7 @@ class UserController extends Controller {
             if (isset($_POST['LLoginForm'])) {
                 $model->attributes = $_POST['LLoginForm'];
                 //Special behaviour for cases, when JS isn't enabled
-                if($model->validate() && $model->service != 'email'){
+                if ($model->validate() && $model->service != 'email') {
                     $this->redirect(array('', 'service' => $model->service, 'rememberMe' => $model->rememberMe));
                 }
             }else
@@ -109,21 +108,27 @@ class UserController extends Controller {
                 $authIdentity->password = $model->password;
             }
             if ($authIdentity->authenticate()) {
+                if ($authIdentity->errorCode == LEmailService::ERROR_INFORMATION_MAIL_FAILED)
+                    Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Your account was created, but it failed to send you email with account information."));
+
                 $identity = new LUserIdentity($authIdentity);
                 //Authentication succeed
                 if ($identity->authenticate()) {
                     $result = Yii::app()->user->login($identity, $model->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
 
-                    if($result) Yii::app()->user->setFlash('lily.login.success', LilyModule::t('You were successfully logged in.'));
-                    else throw new LException("login() returned false");
+                    if ($result)
+                        Yii::app()->user->setFlash('lily.login.success', LilyModule::t('You were successfully logged in.'));
+                    else
+                        throw new LException("login() returned false");
 
                     //Special redirect to fire popup window closing
                     $authIdentity->redirect();
-                } else {/* $identity->authenticate() returns true only when $authIdentity returns true, so this else will never be achieved */}
+                } else {/* $identity->authenticate() returns true only when $authIdentity returns true, so this else will never be achieved */
+                }
             }
             //Auth failed, close popup and redirect to $authIdentity->cancelUrl
-            if($model->service == 'email'){
-                switch($authIdentity->errorCode){
+            if ($model->service == 'email') {
+                switch ($authIdentity->errorCode) {
                     case LEmailService::ERROR_ACTIVATION_MAIL_SENT:
                         Yii::app()->user->setFlash('lily.login.success', LilyModule::t("Activation e-mail sent."));
                         break;
@@ -133,18 +138,105 @@ class UserController extends Controller {
                     case LEmailService::ERROR_AUTH_FAILED:
                         Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Failed to authenticate (email-password mismatch)."));
                         break;
+                    case LEmailService::ERROR_NOT_REGISTERED:
+                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Account with given e-mail is not registered. You have to pass registration."));
+                        break;
                 }
-            }else{
+            } else {
                 Yii::app()->user->setFlash('lily.login.fail', LilyModule::t('Failed to authenticate.'));
             }
             $authIdentity->cancel();
         }
         $this->render('login', array('model' => $model, 'services' => $services));
     }
-/**
- * Activate action
- * @param $code Activation code
- */
+
+    /**
+     * Register action 
+     */
+    public function actionRegister($service = null, $rememberMe = false) {
+        $id_prefix = 'LAuthWidget-form-';
+        if (isset($_POST['ajax']) && substr($_POST['ajax'], 0, strlen($id_prefix)) == $id_prefix) {
+            $model = new LLoginForm;
+            echo CActiveForm::validate($model);
+            Yii::app()->end();
+        }
+
+        $model_new = false;
+
+        $services = LilyModule::instance()->services;
+        if ($service != null) {
+            $_services = $services;
+            unset($_services['email']);
+            $model = new LLoginForm('', array_keys($_services));
+            $model->service = $service;
+            $model->rememberMe = $rememberMe;
+        } else {
+            $model = new LLoginForm('', array_keys($services));
+            if (isset($_POST['LLoginForm'])) {
+                $model->attributes = $_POST['LLoginForm'];
+                //Special behaviour for cases, when JS isn't enabled
+                if ($model->validate() && $model->service != 'email') {
+                    $this->redirect(array('', 'service' => $model->service, 'rememberMe' => $model->rememberMe));
+                }
+            }else
+                $model_new = true;
+        }
+
+        if (!$model_new && $model->validate() && isset($model->service)) {
+            $authIdentity = Yii::app()->eauth->getIdentity($model->service);
+            $authIdentity->redirectUrl = Yii::app()->user->returnUrl;
+            $authIdentity->cancelUrl = $this->createAbsoluteUrl('user/login');
+            if ($model->service == 'email') {
+                $authIdentity->email = $model->email;
+                $authIdentity->password = $model->password;
+            }
+            if ($authIdentity->authenticate()) {
+                if ($authIdentity->errorCode == LEmailService::ERROR_INFORMATION_MAIL_FAILED)
+                    Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Your account was created, but it failed to send you email with account information."));
+
+                $identity = new LUserIdentity($authIdentity);
+                //Authentication succeed
+                if ($identity->authenticate()) {
+                    $result = Yii::app()->user->login($identity, $model->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
+
+                    if ($result)
+                        Yii::app()->user->setFlash('lily.login.success', LilyModule::t('You were successfully logged in.'));
+                    else
+                        throw new LException("login() returned false");
+
+                    //Special redirect to fire popup window closing
+                    $authIdentity->redirect();
+                } else {/* $identity->authenticate() returns true only when $authIdentity returns true, so this else will never be achieved */
+                }
+            }
+            //Auth failed, close popup and redirect to $authIdentity->cancelUrl
+            if ($model->service == 'email') {
+                switch ($authIdentity->errorCode) {
+                    case LEmailService::ERROR_ACTIVATION_MAIL_SENT:
+                        Yii::app()->user->setFlash('lily.login.success', LilyModule::t("Activation e-mail sent."));
+                        break;
+                    case LEmailService::ERROR_ACTIVATION_MAIL_FAILED:
+                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Failed to send account activation email."));
+                        break;
+                    case LEmailService::ERROR_AUTH_FAILED:
+                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Failed to authenticate (email-password mismatch)."));
+                        break;
+                    case LEmailService::ERROR_NOT_REGISTERED:
+                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Account with given e-mail is not registered. You have to pass registration."));
+                        break;
+                }
+            } else {
+                Yii::app()->user->setFlash('lily.login.fail', LilyModule::t('Failed to authenticate.'));
+            }
+            $authIdentity->cancel();
+        }
+        $this->render('login', array('model' => $model, 'services' => $services));
+    }
+
+    /**
+     * Activate action
+     * @param $code Activation code
+     */
     public function actionActivate($code) {
         $model = LilyModule::instance()->accountManager->performActivation($code);
         /* $errorCode:
@@ -173,26 +265,27 @@ class UserController extends Controller {
         }
         if (LilyModule::instance()->accountManager->sendMail) {
             if ($errorCode == 0) {
-                $msg .= "<br />".LilyModule::t("An email with account details was sent to your email.");
+                $msg .= "<br />" . LilyModule::t("An email with account details was sent to your email.");
             } else if ($errorCode == 4) {
-                $msg .= "<br/ >".LilyModule::t("An email with account details sending failed. Please contact site administrator.");
+                $msg .= "<br/ >" . LilyModule::t("An email with account details sending failed. Please contact site administrator.");
             }
         }
-        Yii::app()->user->setFlash('lily.activate.'.(($errorCode==0 || $errorCode==4)?'success':'fail'), $msg);
+        Yii::app()->user->setFlash('lily.activate.' . (($errorCode == 0 || $errorCode == 4) ? 'success' : 'fail'), $msg);
         $this->redirect(Yii::app()->homeUrl);
     }
-/**
- * Logout action
- */
-    public function actionLogout(){
+
+    /**
+     * Logout action
+     */
+    public function actionLogout() {
         Yii::app()->user->logout();
         $this->redirect(Yii::app()->homeUrl);
     }
 
-/**
- * List action
- * @param boolean $showDeleted Whether to show deleted users
- */
+    /**
+     * List action
+     * @param boolean $showDeleted Whether to show deleted users
+     */
     public function actionList($showDeleted = false) {
         $params = array(
             'criteria' => array(
@@ -202,44 +295,52 @@ class UserController extends Controller {
                 'pageSize' => 20,
             ),
         );
-        if(!$showDeleted) $params['criteria']['condition'] = 'deleted=0';
+        if (!$showDeleted)
+            $params['criteria']['condition'] = 'deleted=0';
         $dataProvider = new CActiveDataProvider('LUser', $params);
         $this->render('list', array('dataProvider' => $dataProvider, 'showDeleted' => $showDeleted));
     }
-/**
- * View action
- */
+
+    /**
+     * View action
+     */
     public function actionView() {
         $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
         $model = LUser::model()->findByPk($uid);
         $model->setScenario('registered');
         $this->render('view', array('user' => $model));
     }
-/**
- * Onetime login action
- * @param string $token onetime login token
- * @param string $redirectUrl Url, to which user will be redirected after login
- */
-    public function actionOnetime($token, $redirectUrl = null){
+
+    /**
+     * Onetime login action
+     * @param string $token onetime login token
+     * @param string $redirectUrl Url, to which user will be redirected after login
+     */
+    public function actionOnetime($token, $redirectUrl = null) {
         $result = LilyModule::instance()->accountManager->oneTimeLogin($token);
-        if($result) Yii::app()->user->setFlash('lily.onetime.success', LilyModule::t('You were successfully logged in.'));
-        else Yii::app()->setFlash('lily.onetime.fail', LilyModule::t('Wrong one-time login token.'));
-        $this->redirect(isset($redirectUrl)?$redirectUrl:Yii::app()->homeUrl);
+        if ($result)
+            Yii::app()->user->setFlash('lily.onetime.success', LilyModule::t('You were successfully logged in.'));
+        else
+            Yii::app()->setFlash('lily.onetime.fail', LilyModule::t('Wrong one-time login token.'));
+        $this->redirect(isset($redirectUrl) ? $redirectUrl : Yii::app()->homeUrl);
     }
 
-/**
- * Init action
- * @param string $action Init action (start, finish or next)
- * @throws CHttpException
- */
-    public function actionInit($action){
-        if(!LilyModule::instance()->userIniter->isStarted) throw new CHttpException(404);
-        if(($action=='start' && LilyModule::instance()->userIniter->stepId == 0)||($action=='finish' && LilyModule::instance()->userIniter->stepId
-            == LilyModule::instance()->userIniter->count-1)){
-        $this->render('init', array('action'=>$action));
-        }else if($action == 'next'){
+    /**
+     * Init action
+     * @param string $action Init action (start, finish or next)
+     * @throws CHttpException
+     */
+    public function actionInit($action) {
+        if (!LilyModule::instance()->userIniter->isStarted)
+            throw new CHttpException(404);
+        if (($action == 'start' && LilyModule::instance()->userIniter->stepId == 0) || ($action == 'finish' && LilyModule::instance()->userIniter->stepId
+                == LilyModule::instance()->userIniter->count - 1)) {
+            $this->render('init', array('action' => $action));
+        } else if ($action == 'next') {
             LilyModule::instance()->userIniter->nextStep();
-        }else throw new CHttpException(404);
+        }else
+            throw new CHttpException(404);
     }
+
 }
 

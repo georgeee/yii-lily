@@ -23,7 +23,7 @@ class LLoginFormValidator extends CValidator
      */
     protected function validateAttribute($object, $attribute)
     {
-        if (isset($object->service) && $object->service != 'email' && $object->service != '')
+        if (!empty($object->service) && $object->service != 'email')
             return;
         $v = ($attribute == 'email' ? CValidator::createValidator('email', $object, $attribute) : CValidator::createValidator('match', $object, $attribute, array('pattern' => LilyModule::instance()->passwordRegexp)));
         $v->validate($object);
