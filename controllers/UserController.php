@@ -140,6 +140,7 @@ class UserController extends Controller {
                         break;
                     case LEmailService::ERROR_NOT_REGISTERED:
                         Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Account with given e-mail is not registered. You have to pass registration."));
+                        $this->redirect(array('register', 'email'=> $authIdentity->email));
                         break;
                 }
             } else {
@@ -153,84 +154,52 @@ class UserController extends Controller {
     /**
      * Register action 
      */
-    public function actionRegister($service = null, $rememberMe = false) {
-        $id_prefix = 'LAuthWidget-form-';
-        if (isset($_POST['ajax']) && substr($_POST['ajax'], 0, strlen($id_prefix)) == $id_prefix) {
+    public function actionRegister($rememberMe = false) {
+        if (isset($_POST['ajax']) && $_POST['ajax'] == 'LRegisterForm-form') {
             $model = new LLoginForm;
             echo CActiveForm::validate($model);
             Yii::app()->end();
         }
+        $model = new LRegisterForm;
+        if (isset($_POST['LRegisterForm'])) {
+            $model->attributes = $_POST['LRegisterForm'];
+            if ($model->validate()) {
+                $email = $model->email;
+                $password = $model->password;
+                $authIdentity = new LEmailService;
+                $authIdentity->email = $email;
+                $authIdentity->password = $password;
+                if ($authIdentity->authenticate(true)) {
+                    if (LilyModule::instance()->accountManager->loginAfterRegistration) {
+                        $identity = new LUserIdentity($authIdentity);
+                        $identity->authenticate();
+                        $result = Yii::app()->user->login($identity, $model->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
 
-        $model_new = false;
+                        if ($result)
+                            Yii::app()->user->setFlash('lily.login.success', LilyModule::t('You were successfully logged in.'));
+                        else
+                            throw new LException("login() returned false");
 
-        $services = LilyModule::instance()->services;
-        if ($service != null) {
-            $_services = $services;
-            unset($_services['email']);
-            $model = new LLoginForm('', array_keys($_services));
-            $model->service = $service;
-            $model->rememberMe = $rememberMe;
-        } else {
-            $model = new LLoginForm('', array_keys($services));
-            if (isset($_POST['LLoginForm'])) {
-                $model->attributes = $_POST['LLoginForm'];
-                //Special behaviour for cases, when JS isn't enabled
-                if ($model->validate() && $model->service != 'email') {
-                    $this->redirect(array('', 'service' => $model->service, 'rememberMe' => $model->rememberMe));
+                        //Special redirect to fire popup window closing
+                        $authIdentity->redirect();
+                    }
+                } else {
+                    switch ($authIdentity->errorCode) {
+                        case LEmailService::ERROR_ACTIVATION_MAIL_SENT:
+                            Yii::app()->user->setFlash('lily.login.success', LilyModule::t("Activation e-mail sent."));
+                            break;
+                        case LEmailService::ERROR_ACTIVATION_MAIL_FAILED:
+                            Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Failed to send account activation email."));
+                            break;
+                        case LEmailService::ERROR_INFORMATION_MAIL_FAILED:
+                            Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Your account was created, but it failed to send you email with account information."));
+                            break;
+                    }
                 }
-            }else
-                $model_new = true;
-        }
-
-        if (!$model_new && $model->validate() && isset($model->service)) {
-            $authIdentity = Yii::app()->eauth->getIdentity($model->service);
-            $authIdentity->redirectUrl = Yii::app()->user->returnUrl;
-            $authIdentity->cancelUrl = $this->createAbsoluteUrl('user/login');
-            if ($model->service == 'email') {
-                $authIdentity->email = $model->email;
-                $authIdentity->password = $model->password;
-            }
-            if ($authIdentity->authenticate()) {
-                if ($authIdentity->errorCode == LEmailService::ERROR_INFORMATION_MAIL_FAILED)
-                    Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Your account was created, but it failed to send you email with account information."));
-
-                $identity = new LUserIdentity($authIdentity);
-                //Authentication succeed
-                if ($identity->authenticate()) {
-                    $result = Yii::app()->user->login($identity, $model->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
-
-                    if ($result)
-                        Yii::app()->user->setFlash('lily.login.success', LilyModule::t('You were successfully logged in.'));
-                    else
-                        throw new LException("login() returned false");
-
-                    //Special redirect to fire popup window closing
-                    $authIdentity->redirect();
-                } else {/* $identity->authenticate() returns true only when $authIdentity returns true, so this else will never be achieved */
-                }
-            }
-            //Auth failed, close popup and redirect to $authIdentity->cancelUrl
-            if ($model->service == 'email') {
-                switch ($authIdentity->errorCode) {
-                    case LEmailService::ERROR_ACTIVATION_MAIL_SENT:
-                        Yii::app()->user->setFlash('lily.login.success', LilyModule::t("Activation e-mail sent."));
-                        break;
-                    case LEmailService::ERROR_ACTIVATION_MAIL_FAILED:
-                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Failed to send account activation email."));
-                        break;
-                    case LEmailService::ERROR_AUTH_FAILED:
-                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Failed to authenticate (email-password mismatch)."));
-                        break;
-                    case LEmailService::ERROR_NOT_REGISTERED:
-                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Account with given e-mail is not registered. You have to pass registration."));
-                        break;
-                }
-            } else {
-                Yii::app()->user->setFlash('lily.login.fail', LilyModule::t('Failed to authenticate.'));
-            }
             $authIdentity->cancel();
-        }
-        $this->render('login', array('model' => $model, 'services' => $services));
+            }
+        }else if(isset($_GET['email'])) $model->email = $_GET['email'];
+        $this->render('register', array('model' => $model));
     }
 
     /**

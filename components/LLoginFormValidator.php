@@ -41,8 +41,10 @@ class LLoginFormValidator extends CValidator
     {
         $v1 = ($attribute == 'email' ? CValidator::createValidator('email', $object, $attribute) : CValidator::createValidator('match', $object, $attribute, array('pattern' => LilyModule::instance()->passwordRegexp)));
         $v2 = CValidator::createValidator('required', $object, $attribute);
-        return "if ( $('#$object->id .authMethodSelect').val() == 'email' ) {" . $v1->clientValidateAttribute($object, $attribute)
-            . $v2->clientValidateAttribute($object, $attribute) . "}";
+        $result = $v1->clientValidateAttribute($object, $attribute)
+            . $v2->clientValidateAttribute($object, $attribute);
+        if (isset($object->id)) $result = "if ( $('#$object->id .authMethodSelect').val() == 'email' ) {" . $result . "}";
+        return $result;
     }
 
 }

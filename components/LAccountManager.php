@@ -49,6 +49,11 @@ class LAccountManager extends CApplicationComponent
     public $registerEmail = true;
     
     /**
+     * @var boolean Should we automaticaly log user in after e-mail registration
+     */
+    public $loginAfterRegistration = true;
+    
+    /**
      * @var boolean Whether to activate new account
      */
     public $activate = true;

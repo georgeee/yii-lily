@@ -60,8 +60,6 @@
 
                 <p class="note">If you forgot your password, you can restore it using <a href="<?php echo Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'));?>">this page</a>.</p>
 
-                <p class="note">Fields with <span class="required">*</span> are required.</p>
-
                 <div class="row">
                     <?php echo $form->labelEx($model, 'email'); ?>
                     <?php echo $form->textField($model, 'email'); ?>

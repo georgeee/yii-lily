@@ -72,7 +72,7 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
      * This function simply tries to authenticate auth identity (see docs about user authenticating behaviour)
      * @return bool is user identity authenticated or authentication failed
      */
-    public function authenticate() {
+    public function authenticate($forceRegisterEmail = false) {
         $email = $this->email;
         $password = $this->password;
         $this->authenticated = false;
@@ -82,9 +82,9 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
         }
         $account = LAccount::model()->findByAttributes(array('service' => 'email', 'id' => $email));
         if (!isset($account)) {
-            if (LilyModule::instance()->accountManager->registerEmail) {
+            if (LilyModule::instance()->accountManager->registerEmail || $forceRegisterEmail) {
                 //Performing the registration
-                $mixed = LilyModule::instance()->accountManager->performRegistration($email, $password, LilyModule::instance()->accountManager->activate, LilyModule::instance()->accountManager->sendMail, $this->user);
+                $mixed = LilyModule::instance()->accountManager->performRegistration($email, $password, null,null, $this->user);
                 if (LilyModule::instance()->accountManager->activate) {
                     if (LilyModule::instance()->accountManager->errorCode == 0) {
                         $this->errorCode = self::ERROR_ACTIVATION_MAIL_SENT;
