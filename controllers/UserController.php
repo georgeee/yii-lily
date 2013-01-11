@@ -108,7 +108,7 @@ class UserController extends Controller {
                 $authIdentity->password = $model->password;
             }
             if ($authIdentity->authenticate()) {
-                if ($authIdentity->errorCode == LEmailService::ERROR_INFORMATION_MAIL_FAILED)
+                if ($model->service == 'email'  && $authIdentity->errorCode == LEmailService::ERROR_INFORMATION_MAIL_FAILED)
                     Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Your account was created, but it failed to send you email with account information."));
 
                 $identity = new LUserIdentity($authIdentity);

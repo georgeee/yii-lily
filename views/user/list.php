@@ -28,23 +28,7 @@ if ($showDeleted) {
     $columns[] = array(
         'name' => 'deleted',
         'type' => 'raw',
-        'value' => function($data, $row, $obj)
-        {
-            switch ($data->deleted) {
-                case 0:
-                    return LilyModule::t("Not deleted");
-                    break;
-                case -1:
-                    return LilyModule::t("Totally deleted");
-                    break;
-                default:
-                    return LilyModule::t("Appended to user {user}",
-                        array("{user}" => CHtml::link(CHtml::encode($data->reciever->name),
-                            array("user/view", "uid" => $data->deleted)))
-                    );
-                    break;
-            }
-        },
+        'value' => array('LAccount', 'getDeletedStateLabel'),
     );
 }
 

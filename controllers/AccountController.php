@@ -130,9 +130,9 @@ class AccountController extends Controller {
                 if ($identity->authenticate()) {
                     if ($identity->account->uid == $user->uid) {
                         if (!in_array($identity->account->aid, $aids))
-                            Yii::app()->user->setFlash('lily.account.bind.success', LilyModule::t('Account was successfully binded.'));
+                            Yii::app()->user->setFlash('lily.account.bind.success', LilyModule::t('Account was successfully bound.'));
                         else
-                            Yii::app()->user->setFlash('lily.account.bind.already', LilyModule::t('Account is already binded to current user.'));
+                            Yii::app()->user->setFlash('lily.account.bind.error', LilyModule::t('Account is already bound to current user.'));
                         $authIdentity->redirect();
                     } else {
                         if (LilyModule::instance()->enableUserMerge) {
@@ -141,22 +141,22 @@ class AccountController extends Controller {
                                 LilyModule::instance()->sessionData->merge = array();
                             LilyModule::instance()->sessionData->merge[$merge_id] = $identity->account->uid;
                             LilyModule::instance()->session->save();
-                            Yii::app()->user->setFlash('lily.account.merge', LilyModule::t('You\'ve tried to bind an account, that\'s already binded to {user}.', array('{user}' => CHtml::link($identity->account->user->nameId, $this->createUrl('user/view', array('uid' => $identity->account->uid))))));
+                            Yii::app()->user->setFlash('lily.account.merge.error', LilyModule::t('You\'ve tried to bind an account, that\'s already bound to {user}.', array('{user}' => CHtml::link($identity->account->user->nameId, $this->createUrl('user/view', array('uid' => $identity->account->uid))))));
 
                             $authIdentity->redirect($this->createUrl('account/merge', array('merge_id' => $merge_id)));
                         }else {
-                            Yii::app()->user->setFlash('lily.account.bound', LilyModule::t('Account is already bound to another user.'));
+                            Yii::app()->user->setFlash('lily.account.bound.error', LilyModule::t('Account is already bound to another user.'));
                             $authIdentity->cancel();
                         }
                     }
                 } else {
                     Yii::app()->user->setFlash('lily.account.fail', LilyModule::t('Failed to authenticate account.'));
-                    // закрытие всплывающего окна и перенаправление на cancelUrl
+                    //Closing the popup and redirecting to cancelUrl
                     $authIdentity->cancel();
                 }
             } else {
                 Yii::app()->user->setFlash('lily.account.fail', LilyModule::t('Failed to authenticate account.'));
-                // закрытие всплывающего окна и перенаправление на cancelUrl
+                //Closing the popup and redirecting to cancelUrl
                 $authIdentity->cancel();
             }
         }
@@ -188,9 +188,6 @@ class AccountController extends Controller {
                         'condition' => 'uid=:uid AND hidden=0',
                         'params' => array(':uid' => $uid),
                         'order' => 'uid ASC',
-                    ),
-                    'pagination' => array(
-                        'pageSize' => 20,
                     ),
                 ));
         $this->render('list', array('accountProvider' => $dataProvider, 'user' => LUser::model()->findByPk($uid)));

@@ -20,81 +20,99 @@
     width: 60px;
     float:left;
 }
-#accountList{
-    width: 500px;
-    float: right;
-}
 #accountList .authMethodIcon{
     margin-right: 20px;
 }
 #accountList .authMethod{
     height: 48px;
     margin-bottom: 10px;
-}
-#accountList .authMethodIcon, #accountList .authMethodDesc{
-    float:left;  
+    width: 99%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
 }
 #accountList .authMethodDesc{
     font-size: 16px;
     line-height: 48px;
 }
+.authMethodActions{
+    margin-top: 5px;
+}
 .authMethodIcon{
     width: 48px;
     height: 48px;
+    margin: 0 auto 0 auto;
+    float:left;
+}
+
+.authMethodIconMini{
+    padding-left: 20px;
     margin: 0 auto 0 auto;
 }
 .authMethodTitle{
     text-align: center;
 }
-.authMethodDelete, .authMethodEdit{
-    float: right;
-    width: 19px;
-    height: 19px;
-    margin: 7px 7px 0 0;
-    padding: 0;
-    border: none;
-}
-.authMethodDelete{
-    background: url("images/close.png") 0 0 no-repeat;
-}
-.authMethodEdit{
-    background: url("images/edit.png") 0 0 no-repeat;
-}
-
-.authMethodDelete:hover, .authMethodEdit:hover, .authMethodDelete:focus, .authMethodEdit:focus {
-    background-position: 0 -19px;
-}
-
 .authMethod.vkontakte .authMethodIcon{
-    background-image: url("images/logo/vkontakte.png");
+    background: url("images/logo/48/vkontakte.png") no-repeat;
 }
 .authMethod.google_oauth .authMethodIcon{
-    background-image: url("images/logo/google.png");
+    background: url("images/logo/48/google.png") no-repeat;
 }
 .authMethod.facebook .authMethodIcon{
-    background-image: url("images/logo/facebook.png");
+    background: url("images/logo/48/facebook.png") no-repeat;
 }
 .authMethod.google .authMethodIcon{
-    background-image: url("images/logo/google.png");
+    background: url("images/logo/48/google.png") no-repeat;
 }
 .authMethod.mailru .authMethodIcon{
-    background-image: url("images/logo/mailru.png");
+    background: url("images/logo/48/mailru.png") no-repeat;
 }
 .authMethod.moikrug .authMethodIcon{
-    background-image: url("images/logo/moikrug.png");
+    background: url("images/logo/48/moikrug.png") no-repeat;
 }
 .authMethod.odnoklassniki .authMethodIcon{
-    background-image: url("images/logo/odnoklassniki.png");
+    background: url("images/logo/48/odnoklassniki.png") no-repeat;
 }
 .authMethod.twitter .authMethodIcon{
-    background-image: url("images/logo/twitter.png");
+    background: url("images/logo/48/twitter.png") no-repeat;
 }
 .authMethod.yandex .authMethodIcon{
-    background-image: url("images/logo/yandex.png");
+    background: url("images/logo/48/yandex.png") no-repeat;
 }
 .authMethod.email .authMethodIcon{
-    background-image: url("images/logo/email.png");
+    background: url("images/logo/48/email.png") no-repeat;
 }
+
+.authMethodIconMini.vkontakte{
+    background: url("images/logo/16/vkontakte.png") no-repeat;
+}
+.authMethodIconMini.google_oauth{
+    background: url("images/logo/16/google.png") no-repeat;
+}
+.authMethodIconMini.facebook{
+    background: url("images/logo/16/facebook.png") no-repeat;
+}
+.authMethodIconMini.google{
+    background: url("images/logo/16/google.png") no-repeat;
+}
+.authMethodIconMini.mailru{
+    background: url("images/logo/16/mailru.png") no-repeat;
+}
+.authMethodIconMini.moikrug{
+    background: url("images/logo/16/moikrug.png") no-repeat;
+}
+.authMethodIconMini.odnoklassniki{
+    background: url("images/logo/16/odnoklassniki.png") no-repeat;
+}
+.authMethodIconMini.twitter{
+    background: url("images/logo/16/twitter.png") no-repeat;
+}
+.authMethodIconMini.yandex{
+    background: url("images/logo/16/yandex.png") no-repeat;
+}
+.authMethodIconMini.email{
+    background: url("images/logo/16/email.png") no-repeat;
+}
+
 
 .eauthHandlers,.authMethodSwitcherDiv{
     display : none;

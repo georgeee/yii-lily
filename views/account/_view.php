@@ -1,16 +1,23 @@
 <div class="authMethod <?php echo $data->service; ?>">
     <div class="authMethodIcon"></div>
     <div class="authMethodDesc"><?php
-        if (isset($data->data->url)) {
-            echo CHtml::link($data->displayId, $data->data->url);
-        } else echo $data->displayId;
-        ?></div>
-    <a href="<?php echo $this->createUrl('delete', array('aid' => $data->aid));?>">
-        <div class="authMethodDelete"></div>
-    </a>
-    <?php if ($data->service == 'email') { ?>
-    <a href="<?php echo $this->createUrl('edit', array('aid' => $data->aid));?>">
-        <div class="authMethodEdit"></div>
-    </a>
-    <?php } ?>
+if (isset($data->data->url)) {
+    echo CHtml::link($data->displayId, $data->data->url);
+} else
+    echo $data->displayId;
+?>
+    </div>
+</div>
+<div class="authMethodActions">
+    <b><?php echo LilyModule::t("Actions:"); ?></b>
+    <ul>
+        <?php if ($data->service == 'email') { ?>
+            <li><a href="<?php echo $this->createUrl('edit', array('aid' => $data->aid)); ?>">
+                    <?php echo LilyModule::t('Edit this account'); ?>
+                </a></li>
+        <?php } ?>
+        <li><a href="<?php echo $this->createUrl('delete', array('aid' => $data->aid)); ?>">
+                <?php echo LilyModule::t('Delete this account'); ?>
+            </a></li>
+    </ul>
 </div>

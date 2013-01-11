@@ -27,24 +27,24 @@
  *
  * @package application.modules.lily.models
  */
-class LAccount extends CActiveRecord
-{
+class LAccount extends CActiveRecord {
+
     /**
      * Getter for displayId property
      * @return string
      */
-    public function getDisplayId()
-    {
-        if (isset($this->data->displayId)) return $this->data->displayId;
-        else return $this->id;
+    public function getDisplayId() {
+        if (isset($this->data->displayId))
+            return $this->data->displayId;
+        else
+            return $this->id;
     }
 
     /**
      * Getter for serviceName property
      * @return string
      */
-    public function getServiceName()
-    {
+    public function getServiceName() {
         $services = LilyModule::instance()->services;
         return $services[$this->service]->title;
     }
@@ -54,24 +54,21 @@ class LAccount extends CActiveRecord
      * @param string $className active record class name.
      * @return LAccount the static model class
      */
-    public static function model($className = __CLASS__)
-    {
+    public static function model($className = __CLASS__) {
         return parent::model($className);
     }
 
     /**
      * @return string the associated database table name
      */
-    public function tableName()
-    {
+    public function tableName() {
         return '{{lily_account}}';
     }
 
     /**
      * @return array validation rules for model attributes.
      */
-    public function rules()
-    {
+    public function rules() {
         return array(
             array('hidden', 'default', 'value' => 0),
             array('uid, service, id, created', 'safe', 'on' => 'search'),
@@ -81,8 +78,7 @@ class LAccount extends CActiveRecord
     /**
      * @return array relational rules.
      */
-    public function relations()
-    {
+    public function relations() {
         return array(
             'user' => array(self::BELONGS_TO, 'LUser', 'uid'),
             'sessions' => array(self::HAS_MANY, 'LSession', 'aid'),
@@ -92,8 +88,7 @@ class LAccount extends CActiveRecord
     /**
      * @return array customized attribute labels (name=>label)
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return array(
             'aid' => LilyModule::t("Account id"),
             'uid' => LilyModule::t("User id"),
@@ -106,24 +101,21 @@ class LAccount extends CActiveRecord
     /**
      * This method simply unserializes data attribute
      */
-    protected function unserializeData()
-    {
+    protected function unserializeData() {
         $this->data = unserialize($this->data);
     }
 
     /**
      * This method simply serializes data attribute
      */
-    protected function serializeData()
-    {
+    protected function serializeData() {
         $this->data = serialize($this->data);
     }
 
     /**
      * After find handler, gets executed after model instance being retrieved from database
      */
-    protected function afterFind()
-    {
+    protected function afterFind() {
         parent::afterFind();
         $this->unserializeData();
     }
@@ -131,8 +123,7 @@ class LAccount extends CActiveRecord
     /**
      * After save handler, gets executed after model instance being saved to database
      */
-    protected function afterSave()
-    {
+    protected function afterSave() {
         parent::afterSave();
         $this->unserializeData();
     }
@@ -141,20 +132,17 @@ class LAccount extends CActiveRecord
      * Before save handler, gets executed before model instance being saved to database
      * @return bool true, we haven't to disallow saving action
      */
-    protected function beforeSave()
-    {
+    protected function beforeSave() {
         parent::beforeSave();
         $this->serializeData();
         return true;
     }
 
-
     /**
      * Retrieves a list of models based on the current search/filter conditions.
      * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
      */
-    public function search()
-    {
+    public function search() {
         $criteria = new CDbCriteria;
         $criteria->compare('uid', $this->uid);
         $criteria->compare('service', $this->service, true);
@@ -162,8 +150,8 @@ class LAccount extends CActiveRecord
         $criteria->compare('created', $this->created, true);
         $criteria->compare('hidden', 0);
         return new CActiveDataProvider($this, array(
-            'criteria' => $criteria,
-        ));
+                    'criteria' => $criteria,
+                ));
     }
 
     /**
@@ -175,8 +163,7 @@ class LAccount extends CActiveRecord
      * @param integer $uid User id (account instance), null if it's new account
      * @return LAccount created account instance
      */
-    public static function create($service, $id, $data = null, $uid = null)
-    {
+    public static function create($service, $id, $data = null, $uid = null) {
         if (!isset($uid)) {
             $uid = LUser::create();
             if (!isset($uid)) {
@@ -193,7 +180,7 @@ class LAccount extends CActiveRecord
         $account->id = $id;
         $account->data = $data;
         $account->created = time();
-        $account->hidden = LilyModule::instance()->allServices[$service]->type=='hidden';
+        $account->hidden = LilyModule::instance()->allServices[$service]->type == 'hidden';
         if ($account->save()) {
             if (LilyModule::instance()->enableLogging)
                 Yii::log("LAccount::create($service, $id,..) successfully created new account aid={$account->aid}", CLogger::LEVEL_INFO, 'lily');
@@ -202,6 +189,21 @@ class LAccount extends CActiveRecord
             if (LilyModule::instance()->enableLogging)
                 Yii::log("LAccount::create($service, $id,..) failed on account saving:\n\$account:\n" . print_r($account->getAttributes(), 1) . "\nerrors:\n" . print_r($account->getErrors(), 1), CLogger::LEVEL_WARNING, 'lily');
             return null;
+        }
+    }
+
+    function getDeletedStateLabel($data, $row, $obj) {
+        switch ($data->deleted) {
+            case 0:
+                return LilyModule::t("Not deleted");
+                break;
+            case -1:
+                return LilyModule::t("Totally deleted");
+                break;
+            default:
+                return LilyModule::t("Appended to user {user}", array("{user}" => CHtml::link(CHtml::encode($data->reciever->name), array("user/view", "uid" => $data->deleted)))
+                );
+                break;
         }
     }
 
