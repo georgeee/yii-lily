@@ -1,4 +1,7 @@
-<h1>User</h1>
+<h1>User <?php
+/* @var $user LUser */
+echo CHtml::encode($user->name);
+?></h1>
 <?php
 
 

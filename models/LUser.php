@@ -13,10 +13,10 @@
  * LUser is a model class. It's the main class to manage with users (relations from module configurations will be applied here).
  *
  * @property integer $uid User id
- * @property integer $deleted Deleted status. '0' means not deleted, '-1' - completely deleted and >=1 - id of the user,
+ * @property integer $state State of user. '0' means not deleted, '-1' - deleted, '-2' - banned and >=1 - id of the user,
  * to which this user was appended to (see docs on user merging)
- * @property bool $active Whether user active or not
  * @property bool $inited Is user inited or not
+ * 
  * @property string $nameId String representation of user in format "%name% (id %id)"
  * @property integer $id Alias for $uid property
  * @property string $name Name of the user, if speciefed (see docs on relations property of the module) or it's uid if not
@@ -27,6 +27,9 @@
  */
 class LUser extends CActiveRecord
 {
+    const DELETED_STATE = -1;
+    const BANNED_STATE = -2;
+    const ACTIVE_STATE = 0;
     /**
      * Getter for nameId property
      * @return string
@@ -96,9 +99,8 @@ class LUser extends CActiveRecord
     public function rules()
     {
         return array(
-            array('deleted, inited, active', 'safe', 'on' => 'search'),
-            array('deleted, inited', 'default', 'value' => 0),
-            array('active', 'default', 'value' => 1),
+            array('state, inited', 'safe', 'on' => 'search'),
+            array('state, inited', 'default', 'value' => 0),
         );
     }
 
@@ -109,7 +111,7 @@ class LUser extends CActiveRecord
     {
         //Empty array of default relations, possibly later it will contain something...
         $relations = array(
-            'reciever' => array(self::BELONGS_TO, 'LUser', 'deleted'),
+            'reciever' => array(self::BELONGS_TO, 'LUser', 'state'),
         );
         return array_merge($relations, LilyModule::instance()->userRelations);
     }
@@ -131,8 +133,7 @@ class LUser extends CActiveRecord
     {
         return array(
             'uid' => LilyModule::t('User id'),
-            'deleted' => LilyModule::t('Deleted status'),
-            'active' => LilyModule::t('Active'),
+            'state' => LilyModule::t('State of user'),
             'inited' => LilyModule::t('Inited status'),
         );
     }
@@ -149,8 +150,7 @@ class LUser extends CActiveRecord
         $criteria = new CDbCriteria;
 
         $criteria->compare('uid', $this->uid);
-        $criteria->compare('deleted', $this->deleted);
-        $criteria->compare('active', $this->active);
+        $criteria->compare('state', $this->state);
         $criteria->compare('inited', $this->inited);
 
         return new CActiveDataProvider($this, array(
@@ -174,4 +174,29 @@ class LUser extends CActiveRecord
 
         return $user;
     }
+    
+    
+    /**
+     * Helper function for view
+     * @param type $data
+     * @return string 
+     */
+    public static function getStateLabel($data) {
+        switch ($data->state) {
+            case 0:
+                return LilyModule::t("Active");
+                break;
+            case -1:
+                return LilyModule::t("Deleted");
+                break;
+            case -2:
+                return LilyModule::t("Banned");
+                break;
+            default:
+                return LilyModule::t("Appended to {user}", array("{user}" => CHtml::link(CHtml::encode($data->reciever->name), array("user/view", "uid" => $data->state)))
+                );
+                break;
+        }
+    }
+
 }

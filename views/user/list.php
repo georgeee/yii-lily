@@ -1,10 +1,10 @@
 <h1>Users</h1>
 
 <?php
-if ($showDeleted) {
-    echo CHtml::link(LilyModule::t('Hide deleted users'), array(''));
+if ($showState) {
+    echo CHtml::link(LilyModule::t('Hide deleted (banned) users'), array(''));
 } else {
-    echo CHtml::link(LilyModule::t('Show deleted users'), array('', 'showDeleted' => 1));
+    echo CHtml::link(LilyModule::t('Show deleted (banned) users'), array('', 'showState' => 1));
 }
 
 $columns = array(
@@ -16,19 +16,19 @@ $columns = array(
     ),
     array(
         'header' => LilyModule::t('Accounts'),
-        'label' => LilyModule::t('Accounts list'),
+        'label' => LilyModule::t('Account list'),
         'class' => 'CLinkColumn',
 
         'urlExpression' => 'Yii::app()->urlManager->createUrl("' . LilyModule::instance()->route('account/list') . '", array(\'uid\'=>$data->uid))',
     ),
 );
 
-if ($showDeleted) {
+if ($showState) {
 
     $columns[] = array(
-        'name' => 'deleted',
+        'name' => 'state',
         'type' => 'raw',
-        'value' => array('LAccount', 'getDeletedStateLabel'),
+        'value' => array('LUser', 'getStateLabel'),
     );
 }
 

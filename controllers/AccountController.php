@@ -232,7 +232,7 @@ class AccountController extends Controller {
                 if($model->validate()){
                     $account->data->password = LilyModule::instance()->hash($model->password);
                     $account->save();
-                    $this->redirect(array('list'));
+                    $this->redirect(array('list', 'uid' => $account->uid));
                 }
             }
             $this->render('edit', array('model' => $model, 'account'=>$account));

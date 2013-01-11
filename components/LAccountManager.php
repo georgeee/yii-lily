@@ -320,14 +320,14 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
 
         LilyModule::instance()->onUserMerge(new LMergeEvent($oldUid, $newUid));
 
-        $oldUser->deleted = $newUid;
+        $oldUser->state = $newUid;
 
         if (!$oldUser->save()) {
-            throw new LException("Failed to set old user instance to state=deleted");
+            throw new LException("Failed to set old user instance to new state");
         }
 
         Yii::app()->db->createCommand()
-            ->update(LUser::model()->tableName(), array('deleted' => $newUid), 'deleted=:oldUid', array(':oldUid' => $oldUid));
+            ->update(LUser::model()->tableName(), array('state' => $newUid), 'state=:oldUid', array(':oldUid' => $oldUid));
 
         if (LilyModule::instance()->enableLogging)
             Yii::log("Merge: successfully appended $oldUid to $newUid.", CLogger::LEVEL_INFO, 'lily');

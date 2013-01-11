@@ -17,6 +17,8 @@
  *
  * @property integer $sid Session id
  * @property integer $aid Account id
+ * @property LAccount $account Account instance
+ * @property LUser $user User instance
  * @property object $data Session data object. You can put there some common information, refered to this session
  * (as default it contains information, retrieved from service). Don't forget to save session after editing it (call save() method)
  * @property string $ssid Secure session id. It's a random generated string, which is used for avoiding session data substitution.

@@ -30,8 +30,23 @@ class LUserIdentity extends CBaseUserIdentity
      * @var string the display name for the identity.
      */
     protected $name;
+    /**
+     * User, to which this identity refers to
+     * @var LUser 
+     */
     public $user = null;
-    public $session = null, $account = null;
+    
+    /**
+     * Session, to which this identity refers to
+     * @var LSession 
+     */
+    public $session = null;
+    
+    /**
+     * Account, to which this identity refers to
+     * @var LAccount 
+     */
+    public $account = null;
 
     /**
      * Constructor.

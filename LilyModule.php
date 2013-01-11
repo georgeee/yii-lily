@@ -1,4 +1,5 @@
 <?php
+
 /**
  * LilyModule class file.
  *
@@ -67,9 +68,10 @@ class LilyModule extends CWebModule {
      * @static
      * php callback, that initialises lily
      */
-    public static function initModule(){
+    public static function initModule() {
         Yii::app()->getModule('lily');
     }
+
     /**
      * @var string hash function name (e.g. md5)
      */
@@ -121,21 +123,19 @@ class LilyModule extends CWebModule {
      * @var string prefix to module uri (e.g. lily prefix means all actions of the module have uris like 'lily/<controllerId>/<actionId>)
      */
     public $routePrefix = 'lily';
-
-
     protected $_relations = null;
     protected $_userRelations = array();
     protected $_session = null;
     protected static $_instance;
 
-/**
- * Return absolute route to module's route (e.g. for putting it in Yii::app()->urlManager->createUrl() method)
- * @static
- * @param string $name Route (relative to module path)
- * @return string Absolute route
- */
-    public static function route($name){
-        return self::instance()->routePrefix.'/'.$name;
+    /**
+     * Return absolute route to module's route (e.g. for putting it in Yii::app()->urlManager->createUrl() method)
+     * @static
+     * @param string $name Route (relative to module path)
+     * @return string Absolute route
+     */
+    public static function route($name) {
+        return self::instance()->routePrefix . '/' . $name;
     }
 
     /**
@@ -146,7 +146,7 @@ class LilyModule extends CWebModule {
     public static function instance() {
         return self::$_instance;
     }
-    
+
     /**
      * Getter for relations property of this class
      * (check out the class header for more information)
@@ -251,6 +251,7 @@ class LilyModule extends CWebModule {
         }
         $this->raiseEvent('onUserMerge', $event);
     }
+
     /**
      * Raises onAfterLilyLoad event
      * @param CEvent $event event with sender - module instance
@@ -312,8 +313,9 @@ class LilyModule extends CWebModule {
         if (!isset($services) || !is_array($services)) {
             $_services = $this->allServices;
             $services = array();
-            foreach($_services as $k => $service){
-                if($service->type != 'hidden') $services[$k] = $service;
+            foreach ($_services as $k => $service) {
+                if ($service->type != 'hidden')
+                    $services[$k] = $service;
             }
             if (Yii::app()->hasComponent('cache'))
                 Yii::app()->cache->set('Lily.services', $services);
@@ -368,15 +370,31 @@ class LilyModule extends CWebModule {
                     if ($session->created + $this->sessionTimeout >= time()) {
                         $this->_session = $session;
                         Yii::app()->user->name = $this->user->getName($this->userNameFunction);
-                        if (!$this->user->inited)
-                            $this->userIniter->start();
-                        $logout = false;
+                        if ($this->user->state == LUser::BANNED_STATE) {
+                            $logout = true;
+                            $session->delete();
+                        } else {
+                            if ($this->user->state == LUser::DELETED_STATE) {
+                                $route = Yii::app()->urlManager->parseUrl(Yii::app()->request);
+                                if (!($route == LilyModule::route("user/switch_state")
+                                        && Yii::app()->request->getParam('uid') == $this->user->uid
+                                        && Yii::app()->request->getParam('mode') == LUser::ACTIVE_STATE) && $route != LilyModule::route("user/logout")) {
+                                    Yii::log("User is deleted route:$route", CLogger::LEVEL_WARNING, 'lily');
+                                    Yii::app()->request->redirect(Yii::app()->urlManager->createUrl(LilyModule::route("user/switch_state"), array('uid' => $this->user->uid, 'mode' => LUser::ACTIVE_STATE)));
+                                }
+                            } else {
+                                if (!$this->user->inited)
+                                    $this->userIniter->start();
+                            }
+                            $logout = false;
+                        }
                     }else
                         $session->delete();
                 }
             }
-            if ($logout)
+            if ($logout) {
                 Yii::app()->user->logout();
+            }
         }
         $this->onAfterLilyLoad(new CEvent($this));
     }

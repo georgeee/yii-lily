@@ -24,6 +24,7 @@
  * @property string $id Identifer of the user in service. User is authenticated by this identifer (and service of course)
  * @property integer $created Timestamp of the moment, this account was created
  * @property object $data Account data object
+ * @property LUser $user User, to which this account belongs to
  *
  * @package application.modules.lily.models
  */
@@ -191,20 +192,12 @@ class LAccount extends CActiveRecord {
             return null;
         }
     }
-
-    function getDeletedStateLabel($data, $row, $obj) {
-        switch ($data->deleted) {
-            case 0:
-                return LilyModule::t("Not deleted");
-                break;
-            case -1:
-                return LilyModule::t("Totally deleted");
-                break;
-            default:
-                return LilyModule::t("Appended to user {user}", array("{user}" => CHtml::link(CHtml::encode($data->reciever->name), array("user/view", "uid" => $data->deleted)))
-                );
-                break;
-        }
+    
+    /**
+     * Returns the user, to which this account belongs to
+     * @return LUser user model instance if found, NULL otherwise 
+     */
+    public function getUser(){
+        return LUser::model()->findByPk($this->uid);
     }
-
 }
