@@ -183,13 +183,13 @@ class LUser extends CActiveRecord
      */
     public static function getStateLabel($data) {
         switch ($data->state) {
-            case 0:
+            case self::ACTIVE_STATE:
                 return LilyModule::t("Active");
                 break;
-            case -1:
+            case self::DELETED_STATE:
                 return LilyModule::t("Deleted");
                 break;
-            case -2:
+            case self::BANNED_STATE:
                 return LilyModule::t("Banned");
                 break;
             default:

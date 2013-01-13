@@ -43,9 +43,17 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
      */
     const ERROR_NOT_REGISTERED = 4;
 
-    protected $name = 'email';
-    protected $title = 'E-mail';
-    protected $type = 'email';
+    public function getServiceType(){
+        return 'email';
+    }
+
+    public function getServiceTitle(){
+        return 'E-mail';
+    }
+
+    public function getServiceName(){
+        return 'email';
+    }
 
     /**
      * @var string email field, put here email address, you want to authenticate

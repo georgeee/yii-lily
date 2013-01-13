@@ -15,9 +15,18 @@
  */
 class LOneTimeService extends EAuthServiceBase implements IAuthService
 {
-    protected $name = 'onetime';
-    protected $title = 'One Time Login';
-    protected $type = 'hidden';
+    public function getServiceType(){
+        return 'hidden';
+    }
+
+    public function getServiceTitle(){
+        return 'One Time Login';
+    }
+
+    public function getServiceName(){
+        return 'onetime';
+    }
+
 
     /**
      * @var string Login token

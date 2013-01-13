@@ -1,11 +1,31 @@
 <h1>Users</h1>
+<style>
+    #userListOptions input[type=checkbox]{
+        float:left;
+    }
+</style>
+<form id="userListOptions" action="">
+    <?php if (Yii::app()->user->checkAccess('viewDeletedUser') || Yii::app()->user->checkAccess('viewUser')) { ?>
+        <input type="checkbox" id="hideDeletedCheckbox" value="0" name="showDeleted" <?php echo $showDeleted ? "" : "checked"; ?>>
+        <label for="hideDeletedCheckbox"><?php echo LilyModule::t("hide deleted users"); ?> </label>
+    <?php } ?>
+    <?php if (Yii::app()->user->checkAccess('viewBannedUser') || Yii::app()->user->checkAccess('viewUser')) { ?>
+        <input type="checkbox" id="hideBannedCheckbox" value="0" name="showBanned" <?php echo $showBanned ? "" : "checked"; ?>>
+        <label for="hideBannedCheckbox"> <?php echo LilyModule::t("hide banned users"); ?> </label>
+    <?php } ?>
+    <?php if (Yii::app()->user->checkAccess('viewAppendedUser') || Yii::app()->user->checkAccess('viewUser')) { ?>
+        <input type="checkbox" id="hideAppendedCheckbox" value="0" name="showAppended" <?php echo $showAppended ? "" : "checked"; ?>>
+        <label for="hideAppendedCheckbox"> <?php echo LilyModule::t("hide appended users"); ?></label> 
+    <?php } ?>
+    <?php if (Yii::app()->user->checkAccess('viewActiveUser') || Yii::app()->user->checkAccess('viewUser')) { ?>
+        <input type="checkbox" id="hideActiveCheckbox" value="0" name="showActive" <?php echo $showActive ? "" : "checked"; ?>>
+        <label for="hideActiveCheckbox"> <?php echo LilyModule::t("hide active users"); ?></label> 
+    <?php } ?>
+    <input type="submit" value="<?php echo LilyModule::t('Reload user list'); ?>">
+</form>
 
 <?php
-if ($showState) {
-    echo CHtml::link(LilyModule::t('Hide deleted (banned) users'), array(''));
-} else {
-    echo CHtml::link(LilyModule::t('Show deleted (banned) users'), array('', 'showState' => 1));
-}
+//@TODO hide different state (see action code)
 
 $columns = array(
     array('name' => 'uid'),
@@ -18,21 +38,19 @@ $columns = array(
         'header' => LilyModule::t('Accounts'),
         'label' => LilyModule::t('Account list'),
         'class' => 'CLinkColumn',
-
         'urlExpression' => 'Yii::app()->urlManager->createUrl("' . LilyModule::instance()->route('account/list') . '", array(\'uid\'=>$data->uid))',
     ),
 );
 
-if ($showState) {
 
-    $columns[] = array(
-        'name' => 'state',
-        'type' => 'raw',
-        'value' => array('LUser', 'getStateLabel'),
-    );
-}
+$columns[] = array(
+    'name' => 'state',
+    'type' => 'raw',
+    'value' => array('LUser', 'getStateLabel'),
+);
 
 $this->widget('zii.widgets.grid.CGridView', array(
     'dataProvider' => $dataProvider,
     'columns' => $columns,
-)); ?>
+));
+?>

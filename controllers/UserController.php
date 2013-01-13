@@ -26,20 +26,8 @@ class UserController extends Controller {
      */
     public function filters() {
         return array(
-            'accessControl',
+            'accessControl'
         );
-    }
-
-    /**
-     * Just an expression handler for accessRules()
-     * @static
-     * @param $user
-     * @param $rule
-     * @return bool
-     */
-    public static function allowOwnAccessRule($user, $rule) {
-        $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
-        return $uid == $user->id;
     }
 
     /**
@@ -48,18 +36,13 @@ class UserController extends Controller {
      */
     public function accessRules() {
         return array(
-            array('allow',
-                'actions' => array('edit', 'view', 'index'),
-                'expression' => array(__CLASS__, 'allowOwnAccessRule'),
-                'users' => array('@'),
-            ),
-            array('allow',
-                'actions' => array('edit', 'view', 'index', 'list'),
-                'roles' => array('admin'),
-                'users' => array('@'),
+            array('deny',
+                'actions' => array('logout'),
+                'users' => array('?'),
             ),
             array('deny',
-                'actions' => array('list', 'edit', 'view', 'index'),
+                'actions' => array('login', 'onetime'),
+                'users' => array('@'),
             ),
         );
     }
@@ -114,9 +97,15 @@ class UserController extends Controller {
                 $identity = new LUserIdentity($authIdentity);
                 //Authentication succeed
                 if ($identity->authenticate()) {
-                    if ((isset($identity->user) ? $identity->user->state : $identity->session->user->state) == LUser::BANNED_STATE) {
+                    /* @var $user LUser */
+                    $user = (isset($identity->user) ? $identity->user : $identity->session->user);
+                    if ($user->state == LUser::BANNED_STATE && Yii::app()->authManager->checkAccess('unbanUser', $user->uid, array('uid'=>$user->uid))){
+                        $user->state = LUser::ACTIVE_STATE;
+                        $user->save();
+                    }
+                    //@TODO if user can unban himself, it's better to authenticate him and give him a hint, that he was under banned
+                    if ($user->state == LUser::BANNED_STATE) {
                         Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Your account was put under ban. Please contact to site administrator for details."));
-                        $this->redirect(Yii::app()->homeUrl);
                     } else {
                         $result = Yii::app()->user->login($identity, $model->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
                         if ($result)
@@ -159,7 +148,7 @@ class UserController extends Controller {
      */
     public function actionRegister($rememberMe = false) {
         if (isset($_POST['ajax']) && $_POST['ajax'] == 'LRegisterForm-form') {
-            $model = new LLoginForm;
+            $model = new LRegisterForm;
             echo CActiveForm::validate($model);
             Yii::app()->end();
         }
@@ -172,8 +161,9 @@ class UserController extends Controller {
                 $authIdentity = new LEmailService;
                 $authIdentity->email = $email;
                 $authIdentity->password = $password;
+                $authIdentity->user = Yii::app()->user->isGuest ? null : LilyModule::instance()->user;
                 if ($authIdentity->authenticate(true)) {
-                    if (LilyModule::instance()->accountManager->loginAfterRegistration) {
+                    if (LilyModule::instance()->accountManager->loginAfterRegistration && Yii::app()->user->isGuest) {
                         $identity = new LUserIdentity($authIdentity);
                         $identity->authenticate();
                         $result = Yii::app()->user->login($identity, $model->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
@@ -184,8 +174,8 @@ class UserController extends Controller {
                             throw new LException("login() returned false");
 
                         //Special redirect to fire popup window closing
-                        $authIdentity->redirect();
                     }
+                    $authIdentity->redirect(Yii::app()->user->isGuest ? Yii::app()->homeUrl : $this->createUrl('account/list'));
                 } else {
                     switch ($authIdentity->errorCode) {
                         case LEmailService::ERROR_ACTIVATION_MAIL_SENT:
@@ -211,6 +201,7 @@ class UserController extends Controller {
      * @param $code Activation code
      */
     public function actionActivate($code) {
+        //@TODO autologin
         $model = LilyModule::instance()->accountManager->performActivation($code);
         /* $errorCode:
          * <ul>
@@ -257,9 +248,15 @@ class UserController extends Controller {
 
     /**
      * List action
-     * @param boolean $showState Whether to show state of users
+     * @param type $showDeleted
+     * @param type $showAppended
+     * @param type $showBanned
+     * @param type $showActive
+     * @throws CHttpException 
      */
-    public function actionList($showState = false) {
+    public function actionList($showDeleted = true, $showAppended = true, $showBanned = true, $showActive = true) {
+        if (!Yii::app()->user->checkAccess('listUser'))
+            throw new CHttpException(403);
         $params = array(
             'criteria' => array(
                 'order' => 'uid ASC',
@@ -268,56 +265,69 @@ class UserController extends Controller {
                 'pageSize' => 20,
             ),
         );
-        if (!$showState)
-            $params['criteria']['condition'] = 'state=0';
+        $condition = '';
+        if ($showActive && (Yii::app()->user->checkAccess('viewActiveUser') || Yii::app()->user->checkAccess('viewUser') ))
+            $condition.=(!empty($condition) ? ' OR ' : '') . '(state=' . LUser::ACTIVE_STATE . ')';
+        if ($showDeleted && (Yii::app()->user->checkAccess('viewDeletedUser') || Yii::app()->user->checkAccess('viewUser') ))
+            $condition.=(!empty($condition) ? ' OR ' : '') . '(state=' . LUser::DELETED_STATE . ')';
+        if ($showBanned && (Yii::app()->user->checkAccess('viewBannedUser') || Yii::app()->user->checkAccess('viewUser') ))
+            $condition.=(!empty($condition) ? ' OR ' : '') . '(state=' . LUser::BANNED_STATE . ')';
+        if ($showAppended && (Yii::app()->user->checkAccess('viewAppendedUser') || Yii::app()->user->checkAccess('viewUser') ))
+            $condition.=(!empty($condition) ? ' OR ' : '') . '(state>' . LUser::ACTIVE_STATE . ')';
+        if (!empty($condition))
+            $params['criteria']['condition'] = $condition;
         $dataProvider = new CActiveDataProvider('LUser', $params);
-        $this->render('list', array('dataProvider' => $dataProvider, 'showState' => $showState));
+        $this->render('list', array('dataProvider' => $dataProvider, "showDeleted" => $showDeleted, "showAppended" => $showAppended, "showBanned" => $showBanned, "showActive" => $showActive));
     }
 
     /**
      * Switch user state action
      * @param int $uid Id of user
      * @param int $mode Id of user
-     * @param bool $approved Is action approved, or we should ask before performing it
      */
-    public function actionSwitch_state($mode = -1, $uid = null) {
+    public function actionSwitch_state($mode = LUser::DELETED_STATE, $uid = null) {
         $approved = (int) Yii::app()->request->getPost('approved', 0);
         if ($uid == null)
             $uid = Yii::app()->user->id;
         /* @var $user LUser */
         $user = LUser::model()->findByPk($uid);
-        if ($mode > 0)
+        if ($mode > LUser::ACTIVE_STATE)
             throw new CHttpException(404);
-        if ($mode == -2 && false)
-            throw new CHttpException(403); //@TODO checkAccess
+        if (($mode == LUser::DELETED_STATE && ($user->state == LUser::DELETED_STATE || !Yii::app()->user->checkAccess('deleteUser', array('user' => $user))))
+                || ($mode == LUser::BANNED_STATE && ($user->state == LUser::BANNED_STATE || !Yii::app()->user->checkAccess('banUser', array('user' => $user))))
+                || ($mode == LUser::ACTIVE_STATE && ($user->state == LUser::ACTIVE_STATE
+                || ($user->state == LUser::DELETED_STATE && !Yii::app()->user->checkAccess('restoreUser', array('user' => $user)))
+                || ($user->state == LUser::BANNED_STATE && !Yii::app()->user->checkAccess('unbanUser', array('user' => $user)))
+                )))
+            throw new CHttpException(403);
         $result = false;
         if ($approved) {
             $user->state = $mode;
             $result = $user->save();
-            if ($result && $mode < 0 && $uid == Yii::app()->user->id) {
+            if ($result && $mode < LUser::ACTIVE_STATE && $uid == Yii::app()->user->id) {
                 Yii::app()->user->logout();
                 $this->redirect(Yii::app()->homeUrl);
             } else {
                 if ($result) {
                     switch ($mode) {
-                        case 0: $msg = LilyModule::t('User {user} was successfully activated', array('{user}' => $user->name));
+                        case LUser::ACTIVE_STATE: $msg = LilyModule::t('User {user} was successfully activated', array('{user}' => $user->name));
                             break;
-                        case -1: $msg = LilyModule::t('User {user} was successfully deleted', array('{user}' => $user->name));
+                        case LUser::DELETED_STATE: $msg = LilyModule::t('User {user} was successfully deleted', array('{user}' => $user->name));
                             break;
-                        case -2: $msg = LilyModule::t('User {user} was successfully banned', array('{user}' => $user->name));
+                        case LUser::BANNED_STATE: $msg = LilyModule::t('User {user} was successfully banned', array('{user}' => $user->name));
                             break;
                     }
                     Yii::app()->user->setFlash('lily.switch_state.success', CHtml::encode($msg));
                 } else {
                     //@TODO logging
                     switch ($mode) {
-                        case 0:
+                        case LUser::ACTIVE_STATE:
                             $msg = LilyModule::t('Error occured while activating user {user}', array('{user}' => $user->name));
                             break;
-                        case -1:
+                        case LUser::DELETED_STATE:
                             $msg = LilyModule::t('Error occured while deleting user {user}', array('{user}' => $user->name));
                             break;
-                        case -2:
+                        case LUser::BANNED_STATE:
                             $msg = LilyModule::t('Error occured while banning user {user}', array('{user}' => $user->name));
                             break;
                     }
@@ -334,6 +344,8 @@ class UserController extends Controller {
      */
     public function actionView() {
         $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
+        if (!Yii::app()->user->checkAccess('viewUser', array('uid' => $uid)))
+            throw new CHttpException(403);
         $model = LUser::model()->findByPk($uid);
         $model->setScenario('registered');
         $this->render('view', array('user' => $model));
@@ -360,14 +372,14 @@ class UserController extends Controller {
      */
     public function actionInit($action) {
         if (!LilyModule::instance()->userIniter->isStarted)
-            throw new CHttpException(404);
+            throw new CHttpException(403);
         if (($action == 'start' && LilyModule::instance()->userIniter->stepId == 0) || ($action == 'finish' && LilyModule::instance()->userIniter->stepId
                 == LilyModule::instance()->userIniter->count - 1)) {
             $this->render('init', array('action' => $action));
         } else if ($action == 'next') {
             LilyModule::instance()->userIniter->nextStep();
         }else
-            throw new CHttpException(404);
+            throw new CHttpException(403);
     }
 
 }

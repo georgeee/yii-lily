@@ -55,7 +55,7 @@
                 <?php if(LilyModule::instance()->accountManager->registerEmail){ ?>
                 <p class="note">If you're not yet registered, just fill in E-mail and password fields with your e-mail address and a password you want to use. You'll be automaticaly registrated.</p>
 <?php }else{ ?>
-                <p class="note">If you're not yet registered, just go to <?php echo CHtml::link("registration page", array("register")); ?> and pass the registration. Or you can choose another authentication method.</p>
+                <p class="note">If you're not yet registered, just go to <?php echo CHtml::link("registration page", array("user/register")); ?> and pass the registration. Or you can choose another authentication method.</p>
                 <?php }?>
 
                 <p class="note">If you forgot your password, you can restore it using <a href="<?php echo Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'));?>">this page</a>.</p>

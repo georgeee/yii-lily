@@ -158,7 +158,7 @@ class LUserIniter extends CApplicationComponent
                     );
                 }
             }
-            if($this->showStartStep) $steps[$count++] = (object)array(
+            if($this->showFinishStep) $steps[$count++] = (object)array(
                 'page' => Yii::app()->createUrl($initRoute, array('action'=>'finish')),
                 'name' => "Finish",
                 'allowed' => array($initRoute),

@@ -28,31 +28,7 @@ class AccountController extends Controller {
             'accessControl',
         );
     }
-    /**
-     * Just an expression handler for accessRules()
-     * @static
-     * @param $user
-     * @param $rule
-     * @return bool
-     */
-    public static function allowListOwnAccessRule($user, $rule) {
-        $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
-        return $uid == $user->id;
-    }
 
-    /**
-     * Just an expression handler for accessRules()
-     * @static
-     * @param $user
-     * @param $rule
-     * @return bool
-     */
-    public static function allowModifyOwnAccessRule($user, $rule) {
-        $aid = Yii::app()->request->getParam('aid');
-        $account = LAccount::model()->findByPk($aid);
-        if($account==null) return false;
-        return $account->uid == $user->id;
-    }
 
 /**
  * Declares access rules for the controller
@@ -60,26 +36,13 @@ class AccountController extends Controller {
  */
     public function accessRules() {
         return array(
-            array('allow',
-                'actions' => array('bind', 'merge', 'index'),
-                'users' => array('@'),
-            ),
-            array('allow',
-                'actions' => array('list'),
-                'expression' => array(__CLASS__, 'allowListOwnAccessRule'),
-                'users' => array('@'),
-            ),
-            array('allow',
-                'actions' => array('delete', 'edit'),
-                'expression' => array(__CLASS__, 'allowModifyOwnAccessRule'),
-            ),
-            array('allow',
-                'actions' => array('list', 'delete', 'index', 'edit'),
-                'roles' => array('admin'),
-                'users' => array('@'),
+            array('deny',
+                'actions' => array('bind', 'delete', 'edit', 'list', 'merge'),
+                'users' => array('?'),
             ),
             array('deny',
-                'actions' => array('bind', 'delete', 'index', 'list', 'merge'),
+                'actions' => array('restore'),
+                'users' => array('@'),
             ),
         );
     }
@@ -168,6 +131,7 @@ class AccountController extends Controller {
  * @throws CHttpException 404 if merge_id is wrong
  */
     public function actionMerge($merge_id) {
+        //@TODO behaviour, when we're appending banned user 
         if (!isset(LilyModule::instance()->sessionData->merge[$merge_id]))
             throw new CHttpException(404, LilyModule::t('Incorrect merge id specified!'));
         $accept = Yii::app()->request->getPost('accept');
@@ -183,11 +147,13 @@ class AccountController extends Controller {
  */
     public function actionList() {
         $uid = Yii::app()->request->getQuery('uid', Yii::app()->user->id);
+        if(!Yii::app()->user->checkAccess('listAccounts', array('uid'=>$uid)))
+                throw new CHttpException(403);
         $dataProvider = new CActiveDataProvider('LAccount', array(
                     'criteria' => array(
                         'condition' => 'uid=:uid AND hidden=0',
                         'params' => array(':uid' => $uid),
-                        'order' => 'uid ASC',
+                        'order' => 'aid ASC',
                     ),
                 ));
         $this->render('list', array('accountProvider' => $dataProvider, 'user' => LUser::model()->findByPk($uid)));
@@ -201,6 +167,8 @@ class AccountController extends Controller {
 		$accept = Yii::app()->request->getPost('accept');
         $account = LAccount::model()->findByPk($aid);
         if(!isset($account)) throw new CHttpException(404);
+        if(!Yii::app()->user->checkAccess('deleteAccount', array('uid'=>$account->uid)))
+                throw new CHttpException(403);
         $count = Yii::app()->db->createCommand()
 			->select(array('count(*) as cnt'))->from(LAccount::model()->tableName())
 			->where('uid=:uid AND hidden=0', array(':uid'=>$account->uid))->queryRow(false);
@@ -221,6 +189,8 @@ class AccountController extends Controller {
     public function actionEdit($aid){
         $account = LAccount::model()->findByPk($aid);
         if(!isset($account)) throw new CHttpException(404);
+        if(!Yii::app()->user->checkAccess('editEmailAccount', array('uid'=>$account->uid)))
+                throw new CHttpException(403);
         if($account->service == 'email'){
             $model = new LPasswordChangeForm;
             if (isset($_POST['ajax']) && $_POST['ajax'] === 'password-form') {

@@ -46,8 +46,7 @@ class LAccount extends CActiveRecord {
      * @return string
      */
     public function getServiceName() {
-        $services = LilyModule::instance()->services;
-        return $services[$this->service]->title;
+        return LilyModule::instance()->allServices[$this->service]->title;
     }
 
     /**
