@@ -116,7 +116,7 @@ class LUser extends CActiveRecord
         return array_merge($relations, LilyModule::instance()->userRelations);
     }
 
-    //TODO What will happen if id==null
+    //@TODO What will happen if id==null
     public function getAccountIds($uid = null)
     {
         if (!isset($uid))
@@ -134,7 +134,7 @@ class LUser extends CActiveRecord
         return array(
             'uid' => LilyModule::t('User id'),
             'state' => LilyModule::t('State of user'),
-            'inited' => LilyModule::t('Inited status'),
+            'inited' => LilyModule::t('Initialization status'),
         );
     }
 
@@ -167,11 +167,10 @@ class LUser extends CActiveRecord
     {
         $user = new LUser;
         if (!$user->save()) {
-            return null;
+            throw new CDbException("failed to create new user");
         }
         $account = LAccount::create('onetime', $user->uid, null, $user->uid);
-        if (!isset($account)) return null;
-
+        Yii::log("Created new user with uid {$user->uid}", CLogger::LEVEL_INFO, 'lily');
         return $user;
     }
     

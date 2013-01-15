@@ -44,7 +44,7 @@ $this->breadcrumbs = array(
                     
                 </div>
             </div>
-        <?php if(LilyModule::instance()->accountManager->loginAfterRegistration){ ?>
+        <?php if(LilyModule::instance()->accountManager->loginAfterRegistration && Yii::app()->user->isGuest){ ?>
         <div class="row rememberMeFieldDiv">
             <?php echo $form->checkBox($model, 'rememberMe', array('class' => 'authMethodRememberMe')); ?>
             <?php echo $form->label($model, 'rememberMe', array('class' => 'authMethodRememberMeLabel')); ?>

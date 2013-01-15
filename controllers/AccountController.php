@@ -14,26 +14,26 @@
  * @package application.modules.lily.controllers
  */
 class AccountController extends Controller {
+
     /**
      * @var string the name of the default action
      */
-    public $defaultAction='list';
+    public $defaultAction = 'list';
 
-/**
- * Declares filters for the controller
- * @return array filters
- */
+    /**
+     * Declares filters for the controller
+     * @return array filters
+     */
     public function filters() {
         return array(
             'accessControl',
         );
     }
 
-
-/**
- * Declares access rules for the controller
- * @return array access rules
- */
+    /**
+     * Declares access rules for the controller
+     * @return array access rules
+     */
     public function accessRules() {
         return array(
             array('deny',
@@ -46,11 +46,12 @@ class AccountController extends Controller {
             ),
         );
     }
-/**
- * Bind action
- * @param string $service Service, which is being authenticated
- * @param boolean $rememberMe Whether to remember user
- */
+
+    /**
+     * Bind action
+     * @param string $service Service, which is being authenticated
+     * @param boolean $rememberMe Whether to remember user
+     */
     public function actionBind($service = null, $rememberMe = false) {
         $id_prefix = 'LAuthWidget-form-';
         if (isset($_POST['ajax']) && substr($_POST['ajax'], 0, strlen($id_prefix)) == $id_prefix) {
@@ -103,9 +104,9 @@ class AccountController extends Controller {
                             if (!isset(LilyModule::instance()->sessionData->merge))
                                 LilyModule::instance()->sessionData->merge = array();
                             LilyModule::instance()->sessionData->merge[$merge_id] = $identity->account->uid;
-                            LilyModule::instance()->session->save();
+                            if (!LilyModule::instance()->session->save())
+                                throw new CDbException("can't save session");
                             Yii::app()->user->setFlash('lily.account.merge.error', LilyModule::t('You\'ve tried to bind an account, that\'s already bound to {user}.', array('{user}' => CHtml::link($identity->account->user->nameId, $this->createUrl('user/view', array('uid' => $identity->account->uid))))));
-
                             $authIdentity->redirect($this->createUrl('account/merge', array('merge_id' => $merge_id)));
                         }else {
                             Yii::app()->user->setFlash('lily.account.bound.error', LilyModule::t('Account is already bound to another user.'));
@@ -113,42 +114,52 @@ class AccountController extends Controller {
                         }
                     }
                 } else {
-                    Yii::app()->user->setFlash('lily.account.fail', LilyModule::t('Failed to authenticate account.'));
+                    Yii::app()->user->setFlash('lily.account.error', LilyModule::t('Failed to authenticate account.'));
                     //Closing the popup and redirecting to cancelUrl
                     $authIdentity->cancel();
                 }
             } else {
-                Yii::app()->user->setFlash('lily.account.fail', LilyModule::t('Failed to authenticate account.'));
+                Yii::app()->user->setFlash('lily.account.error', LilyModule::t('Failed to authenticate account.'));
                 //Closing the popup and redirecting to cancelUrl
                 $authIdentity->cancel();
             }
         }
         $this->render('bind', array('model' => $model, 'services' => $services));
     }
-/**
- * Merge action
- * @param string $merge_id Merge id string (randomly generated token)
- * @throws CHttpException 404 if merge_id is wrong
- */
+
+    /**
+     * Merge action
+     * @param string $merge_id Merge id string (randomly generated token)
+     * @throws CHttpException 404 if merge_id is wrong
+     */
     public function actionMerge($merge_id) {
-        //@TODO behaviour, when we're appending banned user 
         if (!isset(LilyModule::instance()->sessionData->merge[$merge_id]))
-            throw new CHttpException(404, LilyModule::t('Incorrect merge id specified!'));
+            throw new CHttpException(404, LilyModule::t('Incorrect merge id specified'));
         $accept = Yii::app()->request->getPost('accept');
         if (isset($accept)) {
             LilyModule::instance()->accountManager->merge(LilyModule::instance()->sessionData->merge[$merge_id], Yii::app()->user->id);
             unset(LilyModule::instance()->sessionData->merge[$merge_id]);
-            $this->redirect(array('list'));
+            $this->redirect(array('user/view'));
+        } else {
+            $user = LUser::model()->findByPk(LilyModule::instance()->sessionData->merge[$merge_id]);
+            $this->render('merge', array('user' => $user,
+                'banWarning' => ($user->state == LUser::BANNED_STATE
+                && !Yii::app()->authManager->checkAccess('unbanUser', $user->uid, array('uid' => Yii::app()->user->id))
+                && !Yii::app()->authManager->checkAccess('unbanUser', Yii::app()->user->id, array('uid' => Yii::app()->user->id))),
+                'deleteWarning' => ($user->state == LUser::DELETED_STATE
+                && !Yii::app()->authManager->checkAccess('restoreUser', $user->uid, array('uid' => Yii::app()->user->id))
+                && !Yii::app()->authManager->checkAccess('restoreUser', Yii::app()->user->id, array('uid' => Yii::app()->user->id)))
+            ));
         }
-        $this->render('merge', array('user' => LUser::model()->findByPk(LilyModule::instance()->sessionData->merge[$merge_id])));
     }
-/**
- * List action
- */
+
+    /**
+     * List action
+     */
     public function actionList() {
         $uid = Yii::app()->request->getQuery('uid', Yii::app()->user->id);
-        if(!Yii::app()->user->checkAccess('listAccounts', array('uid'=>$uid)))
-                throw new CHttpException(403);
+        if (!Yii::app()->user->checkAccess('listAccounts', array('uid' => $uid)))
+            throw new CHttpException(403);
         $dataProvider = new CActiveDataProvider('LAccount', array(
                     'criteria' => array(
                         'condition' => 'uid=:uid AND hidden=0',
@@ -158,79 +169,89 @@ class AccountController extends Controller {
                 ));
         $this->render('list', array('accountProvider' => $dataProvider, 'user' => LUser::model()->findByPk($uid)));
     }
-/**
- * Delete action
- * @param integer $aid Account Id
- * @param string $accept If $accept is set, we will act the deletion of account
- */
+
+    /**
+     * Delete action
+     * @param integer $aid Account Id
+     * @param string $accept If $accept is set, we will act the deletion of account
+     */
     public function actionDelete($aid) {
-		$accept = Yii::app()->request->getPost('accept');
+        $accept = Yii::app()->request->getPost('accept');
         $account = LAccount::model()->findByPk($aid);
-        if(!isset($account)) throw new CHttpException(404);
-        if(!Yii::app()->user->checkAccess('deleteAccount', array('uid'=>$account->uid)))
-                throw new CHttpException(403);
+        if (!isset($account))
+            throw new CHttpException(404);
+        if (!Yii::app()->user->checkAccess('deleteAccount', array('uid' => $account->uid)))
+            throw new CHttpException(403);
         $count = Yii::app()->db->createCommand()
-			->select(array('count(*) as cnt'))->from(LAccount::model()->tableName())
-			->where('uid=:uid AND hidden=0', array(':uid'=>$account->uid))->queryRow(false);
-			
-		$count = $count[0];
-		if($count <= 1) throw new CHttpException(403, LilyModule::t("Impossible to delete last account!"));
+                        ->select(array('count(*) as cnt'))->from(LAccount::model()->tableName())
+                        ->where('uid=:uid AND hidden=0', array(':uid' => $account->uid))->queryRow(false);
+
+        $count = $count[0];
+        if ($count <= 1)
+            throw new CHttpException(403, LilyModule::t("Impossible to delete last account!"));
         if (isset($accept)) {
-            $account->delete();
+            if (!$account->delete())
+                throw new CDbException("can't delete account");
             $this->redirect(array('list'));
         }
         $this->render('delete', array('account' => $account));
     }
-/**
- * Edit action
- * @param integer $aid Account Id
- * @throws CHttpException 404 if service of the account is 'email'
- */
-    public function actionEdit($aid){
+
+    /**
+     * Edit action
+     * @param integer $aid Account Id
+     * @throws CHttpException 404 if service of the account is 'email'
+     */
+    public function actionEdit($aid) {
         $account = LAccount::model()->findByPk($aid);
-        if(!isset($account)) throw new CHttpException(404);
-        if(!Yii::app()->user->checkAccess('editEmailAccount', array('uid'=>$account->uid)))
-                throw new CHttpException(403);
-        if($account->service == 'email'){
+        if (!isset($account))
+            throw new CHttpException(404);
+        if (!Yii::app()->user->checkAccess('editEmailAccount', array('uid' => $account->uid)))
+            throw new CHttpException(403);
+        if ($account->service == 'email') {
             $model = new LPasswordChangeForm;
             if (isset($_POST['ajax']) && $_POST['ajax'] === 'password-form') {
                 echo CActiveForm::validate($model);
                 Yii::app()->end();
             }
-            if(isset($_POST['LPasswordChangeForm'])){
+            if (isset($_POST['LPasswordChangeForm'])) {
                 $model->attributes = $_POST['LPasswordChangeForm'];
-                if($model->validate()){
+                if ($model->validate()) {
                     $account->data->password = LilyModule::instance()->hash($model->password);
-                    $account->save();
+                    if (!$account->save())
+                        throw new CDbException("can't save account");
                     $this->redirect(array('list', 'uid' => $account->uid));
                 }
             }
-            $this->render('edit', array('model' => $model, 'account'=>$account));
-        }else throw new CHttpException(404);
+            $this->render('edit', array('model' => $model, 'account' => $account));
+        }else
+            throw new CHttpException(404);
     }
-/**
- * Restore action
- */
-    public function actionRestore(){
+
+    /**
+     * Restore action
+     */
+    public function actionRestore() {
         $model = new LRestoreForm;
         if (isset($_POST['ajax']) && $_POST['ajax'] === 'restore-form') {
             echo CActiveForm::validate($model);
             Yii::app()->end();
         }
-        if(isset($_POST['LRestoreForm'])){
+        if (isset($_POST['LRestoreForm'])) {
             $model->attributes = $_POST['LRestoreForm'];
-            if($model->validate()){
+            if ($model->validate()) {
                 $result = LilyModule::instance()->accountManager->sendRestoreMail($model->account);
-                if($result){
+                if ($result) {
                     Yii::app()->user->setFlash('lily.restore.success', LilyModule::t('Message with restoration instructions was sent to your e-mail.'));
-                }else{
-                    Yii::app()->user->setFlash('lily.restore.fail', LilyModule::t('Failed to send e-mail with restoration instructions.'));
+                } else {
+                    Yii::app()->user->setFlash('lily.restore.error', LilyModule::t('Failed to send e-mail with restoration instructions.'));
                 }
                 $this->redirect(array('user/login'));
             }
         }
         $this->render('restore', array('model' => $model));
     }
+
 }
 
 ?>

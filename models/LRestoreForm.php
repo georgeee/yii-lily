@@ -42,8 +42,8 @@ class LRestoreForm extends CFormModel
      */
     public function inDB($attribute, $params)
     {
-        $this->account = $account = LAccount::model()->findByAttributes(array('service' => 'email', 'id' => $this->$attribute));
-        if (!isset($account))
+        $this->account = LAccount::model()->findByAttributes(array('service' => 'email', 'id' => $this->$attribute));
+        if (!isset($this->account))
             $this->addError($attribute, LilyModule::t("Account with such email doesn't exist."));
     }
 

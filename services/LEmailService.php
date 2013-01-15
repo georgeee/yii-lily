@@ -43,15 +43,15 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
      */
     const ERROR_NOT_REGISTERED = 4;
 
-    public function getServiceType(){
+    public function getServiceType() {
         return 'email';
     }
 
-    public function getServiceTitle(){
+    public function getServiceTitle() {
         return 'E-mail';
     }
 
-    public function getServiceName(){
+    public function getServiceName() {
         return 'email';
     }
 
@@ -77,22 +77,27 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
     public $user = null;
 
     /**
-     * This function simply tries to authenticate auth identity (see docs about user authenticating behaviour)
-     * @return bool is user identity authenticated or authentication failed
+     * This function simply tries to authenticate auth identity
+     * @param type $forceRegisterEmail Should we auto-register e-mail even if LilyModule::instance()->accountManager->registerEmail is set to false
+     * @param type $checkPassword Should we check password matching if account already exist
+     * @return boolean is user identity authenticated or authentication failed
      */
-    public function authenticate($forceRegisterEmail = false) {
+    public function authenticate($forceRegisterEmail = false, $checkPassword = true) {
         $email = $this->email;
-        $password = $this->password;
         $this->authenticated = false;
 
-        if (!isset($email) || !isset($password)) {
+        if (!isset($email)) {
             return false;
         }
         $account = LAccount::model()->findByAttributes(array('service' => 'email', 'id' => $email));
+        if (!(isset($account) && !$checkPassword) && !isset($this->password))
+            return false;
+        if (!(isset($account) && !$checkPassword))
+            $password = $this->password;
         if (!isset($account)) {
             if (LilyModule::instance()->accountManager->registerEmail || $forceRegisterEmail) {
                 //Performing the registration
-                $mixed = LilyModule::instance()->accountManager->performRegistration($email, $password, null,null, $this->user);
+                LilyModule::instance()->accountManager->performRegistration($email, $password, null, null, $this->user);
                 if (LilyModule::instance()->accountManager->activate) {
                     if (LilyModule::instance()->accountManager->errorCode == 0) {
                         $this->errorCode = self::ERROR_ACTIVATION_MAIL_SENT;
@@ -100,21 +105,16 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
                         $this->errorCode = self::ERROR_ACTIVATION_MAIL_FAILED;
                     }
                 } else {
-                    if (!isset($mixed))
-                        throw new LException("Account was not registered (performRegistration returned null)");
-                    else {
-                        $this->errorCode = (LilyModule::instance()->accountManager->sendMail &&
-                                LilyModule::instance()->accountManager->errorCode == 2) ? self::ERROR_INFORMATION_MAIL_FAILED : self::ERROR_NONE;
-                        $this->attributes['id'] = $this->attributes['email'] = $this->attributes['displayId'] = $email;
-                        $this->authenticated = true;
-                    }
+                    $this->errorCode = (LilyModule::instance()->accountManager->sendMail &&
+                            LilyModule::instance()->accountManager->errorCode == 1) ? self::ERROR_INFORMATION_MAIL_FAILED : self::ERROR_NONE;
+                    $this->attributes['id'] = $this->attributes['email'] = $this->attributes['displayId'] = $email;
+                    $this->authenticated = true;
                 }
             } else {
                 $this->errorCode = self::ERROR_NOT_REGISTERED;
             }
         } else {
-            $password_hash = LilyModule::instance()->hash($password);
-            if ($password_hash == $account->data->password) {
+            if (!$checkPassword || ($password_hash = LilyModule::instance()->hash($password)) == $account->data->password) {
                 $this->attributes['id'] = $this->attributes['email'] = $this->attributes['displayId'] = $email;
                 $this->authenticated = true;
                 $this->errorCode = self::ERROR_NONE;
@@ -123,8 +123,6 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
             }
         }
         Yii::log("LEmailService auth resulted with code $this->errorCode.", CLogger::LEVEL_INFO, 'lily');
-        if ($this->errorCode == self::ERROR_ACTIVATION_MAIL_FAILED || $this->errorCode == self::ERROR_INFORMATION_MAIL_FAILED)
-            Yii::log("E-mail sending failed! E-mail: $email. LEmailService auth resulted with code $this->errorCode.", CLogger::LEVEL_WARNING, 'lily');
         return $this->authenticated;
     }
 

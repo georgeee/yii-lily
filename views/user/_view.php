@@ -13,7 +13,7 @@ $attrs[] = array(
 $attrs[] = array(
     'name' => 'inited',
     'type' => 'raw',
-    'value' => LilyModule::t($data->inited ? "Inited" : "Not inited"),
+    'value' => LilyModule::t($data->inited ? "Initialized" : "Not initialized"),
 );
 if (Yii::app()->user->checkAccess('listAccounts', array('uid' => $data->uid))) {
     $attrs[] = array(

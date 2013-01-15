@@ -160,17 +160,12 @@ class LAccount extends CActiveRecord {
      * @param string $service Service id
      * @param string $id User's id in the service
      * @param object $data Optional service data
-     * @param integer $uid User id (account instance), null if it's new account
+     * @param integer|LUser $uid User id or LUser model instance (account instance), null if it's new user account
      * @return LAccount created account instance
      */
     public static function create($service, $id, $data = null, $uid = null) {
         if (!isset($uid)) {
             $uid = LUser::create();
-            if (!isset($uid)) {
-                if (LilyModule::instance()->enableLogging)
-                    Yii::log("LAccount::create($service, $id,..) failed on new User creation", CLogger::LEVEL_ERROR, 'lily');
-                return null;
-            }
         }
         if (is_object($uid))
             $uid = $uid->uid;
@@ -182,21 +177,19 @@ class LAccount extends CActiveRecord {
         $account->created = time();
         $account->hidden = LilyModule::instance()->allServices[$service]->type == 'hidden';
         if ($account->save()) {
-            if (LilyModule::instance()->enableLogging)
-                Yii::log("LAccount::create($service, $id,..) successfully created new account aid={$account->aid}", CLogger::LEVEL_INFO, 'lily');
+            Yii::log("LAccount::create($service, $id,..) successfully created new account aid={$account->aid} uid={$uid}", CLogger::LEVEL_INFO, 'lily');
             return $account;
         } else {
-            if (LilyModule::instance()->enableLogging)
-                Yii::log("LAccount::create($service, $id,..) failed on account saving:\n\$account:\n" . print_r($account->getAttributes(), 1) . "\nerrors:\n" . print_r($account->getErrors(), 1), CLogger::LEVEL_WARNING, 'lily');
-            return null;
+            throw new CDbException("failed to create new account");
         }
     }
-    
+
     /**
      * Returns the user, to which this account belongs to
      * @return LUser user model instance if found, NULL otherwise 
      */
-    public function getUser(){
+    public function getUser() {
         return LUser::model()->findByPk($this->uid);
     }
+
 }

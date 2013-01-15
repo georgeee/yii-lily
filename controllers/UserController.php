@@ -84,6 +84,7 @@ class UserController extends Controller {
 
         if (!$model_new && $model->validate() && isset($model->service)) {
             $authIdentity = Yii::app()->eauth->getIdentity($model->service);
+            /* @var $authIdentity LEmailService */
             $authIdentity->redirectUrl = Yii::app()->user->returnUrl;
             $authIdentity->cancelUrl = $this->createAbsoluteUrl('user/login');
             if ($model->service == 'email') {
@@ -92,20 +93,21 @@ class UserController extends Controller {
             }
             if ($authIdentity->authenticate()) {
                 if ($model->service == 'email' && $authIdentity->errorCode == LEmailService::ERROR_INFORMATION_MAIL_FAILED)
-                    Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Your account was created, but it failed to send you email with account information."));
+                    Yii::app()->user->setFlash('lily.login.error', LilyModule::t("Your account was created, but it failed to send you email with account information."));
 
                 $identity = new LUserIdentity($authIdentity);
                 //Authentication succeed
                 if ($identity->authenticate()) {
                     /* @var $user LUser */
                     $user = (isset($identity->user) ? $identity->user : $identity->session->user);
-                    if ($user->state == LUser::BANNED_STATE && Yii::app()->authManager->checkAccess('unbanUser', $user->uid, array('uid'=>$user->uid))){
+                    if ($user->state == LUser::BANNED_STATE && Yii::app()->authManager->checkAccess('unbanUser', $user->uid, array('uid' => $user->uid))) {
                         $user->state = LUser::ACTIVE_STATE;
-                        $user->save();
+                        if (!$user->save())
+                            throw new CDbException("failed to save user");
                     }
                     //@TODO if user can unban himself, it's better to authenticate him and give him a hint, that he was under banned
                     if ($user->state == LUser::BANNED_STATE) {
-                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Your account was put under ban. Please contact to site administrator for details."));
+                        Yii::app()->user->setFlash('lily.login.error', LilyModule::t("Your account was put under ban. Please contact to site administrator for details."));
                     } else {
                         $result = Yii::app()->user->login($identity, $model->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
                         if ($result)
@@ -125,18 +127,18 @@ class UserController extends Controller {
                         Yii::app()->user->setFlash('lily.login.success', LilyModule::t("Activation e-mail sent."));
                         break;
                     case LEmailService::ERROR_ACTIVATION_MAIL_FAILED:
-                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Failed to send account activation email."));
+                        Yii::app()->user->setFlash('lily.login.error', LilyModule::t("Failed to send account activation email."));
                         break;
                     case LEmailService::ERROR_AUTH_FAILED:
-                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Failed to authenticate (email-password mismatch)."));
+                        Yii::app()->user->setFlash('lily.login.error', LilyModule::t("Failed to authenticate (email-password mismatch)."));
                         break;
                     case LEmailService::ERROR_NOT_REGISTERED:
-                        Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Account with given e-mail is not registered. You have to pass registration."));
-                        $this->redirect(array('register', 'email' => $authIdentity->email));
+                        Yii::app()->user->setFlash('lily.login.error', LilyModule::t("Account with given e-mail is not registered. You have to pass registration."));
+                        $authIdentity->cancelUrl = $this->createUrl('register', array('email' => $authIdentity->email));
                         break;
                 }
             } else {
-                Yii::app()->user->setFlash('lily.login.fail', LilyModule::t('Failed to authenticate.'));
+                Yii::app()->user->setFlash('lily.login.error', LilyModule::t('Failed to authenticate.'));
             }
             $authIdentity->cancel();
         }
@@ -146,7 +148,7 @@ class UserController extends Controller {
     /**
      * Register action 
      */
-    public function actionRegister($rememberMe = false) {
+    public function actionRegister() {
         if (isset($_POST['ajax']) && $_POST['ajax'] == 'LRegisterForm-form') {
             $model = new LRegisterForm;
             echo CActiveForm::validate($model);
@@ -172,23 +174,22 @@ class UserController extends Controller {
                             Yii::app()->user->setFlash('lily.login.success', LilyModule::t('You were successfully logged in.'));
                         else
                             throw new LException("login() returned false");
-
-                        //Special redirect to fire popup window closing
                     }
-                    $authIdentity->redirect(Yii::app()->user->isGuest ? Yii::app()->homeUrl : $this->createUrl('account/list'));
+                    $authIdentity->redirect(Yii::app()->user->isGuest ? Yii::app()->homeUrl : $this->createUrl('view'));
                 } else {
                     switch ($authIdentity->errorCode) {
                         case LEmailService::ERROR_ACTIVATION_MAIL_SENT:
                             Yii::app()->user->setFlash('lily.login.success', LilyModule::t("Activation e-mail sent."));
                             break;
                         case LEmailService::ERROR_ACTIVATION_MAIL_FAILED:
-                            Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Failed to send account activation email."));
+                            Yii::app()->user->setFlash('lily.login.error', LilyModule::t("Failed to send account activation email."));
                             break;
                         case LEmailService::ERROR_INFORMATION_MAIL_FAILED:
-                            Yii::app()->user->setFlash('lily.login.fail', LilyModule::t("Your account was created, but it failed to send you email with account information."));
+                            Yii::app()->user->setFlash('lily.login.error', LilyModule::t("Your account was created, but it failed to send you email with account information."));
                             break;
                     }
                 }
+                //Special redirect to fire popup window closing
                 $authIdentity->cancel();
             }
         } else if (isset($_GET['email']))
@@ -201,14 +202,12 @@ class UserController extends Controller {
      * @param $code Activation code
      */
     public function actionActivate($code) {
-        //@TODO autologin
-        $model = LilyModule::instance()->accountManager->performActivation($code);
+        $account = LilyModule::instance()->accountManager->performActivation($code);
         /* $errorCode:
          * <ul>
          * <li>1 - failed to find code DB record</li>
          * <li>2 - activation code expired</li>
-         * <li>3 - failed to create email account email record</li>
-         * <li>4 - failed to send mail</li>
+         * <li>3 - failed to send mail</li>
          * <li>0 - everything is OK</li>
          * </ul>
          */
@@ -216,26 +215,38 @@ class UserController extends Controller {
         $msg = '';
         switch ($errorCode) {
             case 0:
-            case 4:
+            case 3:
                 $msg = LilyModule::t("Your account was successfully activated. Now you can login using your email.");
                 break;
             case 1:
             case 2:
                 $msg = LilyModule::t("Your code is wrong or have expired. Please request a new one.");
                 break;
-            case 3:
-                $msg = LilyModule::t("Unexpected site error. Please contact site administrtor, if this message repeats.");
-                break;
         }
         if (LilyModule::instance()->accountManager->sendMail) {
             if ($errorCode == 0) {
                 $msg .= "<br />" . LilyModule::t("An email with account details was sent to your email.");
-            } else if ($errorCode == 4) {
+            } else if ($errorCode == 3) {
                 $msg .= "<br/ >" . LilyModule::t("An email with account details sending failed. Please contact site administrator.");
             }
         }
         Yii::app()->user->setFlash('lily.activate.' . (($errorCode == 0 || $errorCode == 4) ? 'success' : 'fail'), $msg);
-        $this->redirect(Yii::app()->homeUrl);
+        if (($errorCode == 0 || $errorCode == 3) && Yii::app()->user->isGuest && LilyModule::instance()->accountManager->loginAfterRegistration) {
+            //Now comes login
+            $authIdentity = new LEmailService;
+            $authIdentity->email = $account->id;
+            $authIdentity->user = $account->user;
+            $authIdentity->authenticate(false, false);
+            $identity = new LUserIdentity($authIdentity);
+            $identity->authenticate();
+            $result = Yii::app()->user->login($identity, $account->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
+            if ($result) {
+                Yii::app()->user->setFlash('lily.login.success', LilyModule::t('You were successfully logged in.'));
+                $authIdentity->redirect($this->createUrl('view'));
+            }else
+                throw new LException("login() returned false");
+        }else
+            $this->redirect(Yii::app()->homeUrl);
     }
 
     /**
@@ -300,39 +311,23 @@ class UserController extends Controller {
                 || ($user->state == LUser::BANNED_STATE && !Yii::app()->user->checkAccess('unbanUser', array('user' => $user)))
                 )))
             throw new CHttpException(403);
-        $result = false;
         if ($approved) {
             $user->state = $mode;
-            $result = $user->save();
-            if ($result && $mode < LUser::ACTIVE_STATE && $uid == Yii::app()->user->id) {
+            if (!$user->save())
+                throw new CDbException("failed to save user");
+            if ($mode < LUser::ACTIVE_STATE && $uid == Yii::app()->user->id) {
                 Yii::app()->user->logout();
                 $this->redirect(Yii::app()->homeUrl);
             } else {
-                if ($result) {
-                    switch ($mode) {
-                        case LUser::ACTIVE_STATE: $msg = LilyModule::t('User {user} was successfully activated', array('{user}' => $user->name));
-                            break;
-                        case LUser::DELETED_STATE: $msg = LilyModule::t('User {user} was successfully deleted', array('{user}' => $user->name));
-                            break;
-                        case LUser::BANNED_STATE: $msg = LilyModule::t('User {user} was successfully banned', array('{user}' => $user->name));
-                            break;
-                    }
-                    Yii::app()->user->setFlash('lily.switch_state.success', CHtml::encode($msg));
-                } else {
-                    //@TODO logging
-                    switch ($mode) {
-                        case LUser::ACTIVE_STATE:
-                            $msg = LilyModule::t('Error occured while activating user {user}', array('{user}' => $user->name));
-                            break;
-                        case LUser::DELETED_STATE:
-                            $msg = LilyModule::t('Error occured while deleting user {user}', array('{user}' => $user->name));
-                            break;
-                        case LUser::BANNED_STATE:
-                            $msg = LilyModule::t('Error occured while banning user {user}', array('{user}' => $user->name));
-                            break;
-                    }
-                    Yii::app()->user->setFlash('lily.switch_state.error', CHtml::encode($msg));
+                switch ($mode) {
+                    case LUser::ACTIVE_STATE: $msg = LilyModule::t('User {user} was successfully activated', array('{user}' => $user->name));
+                        break;
+                    case LUser::DELETED_STATE: $msg = LilyModule::t('User {user} was successfully deleted', array('{user}' => $user->name));
+                        break;
+                    case LUser::BANNED_STATE: $msg = LilyModule::t('User {user} was successfully banned', array('{user}' => $user->name));
+                        break;
                 }
+                Yii::app()->user->setFlash('lily.switch_state.success', CHtml::encode($msg));
                 $this->redirect(array('view', 'uid' => $uid));
             }
         }else
@@ -344,9 +339,11 @@ class UserController extends Controller {
      */
     public function actionView() {
         $uid = Yii::app()->request->getParam('uid', Yii::app()->user->id);
+        $model = LUser::model()->findByPk($uid);
+        if (!isset($model))
+            throw new CHttpException(404);
         if (!Yii::app()->user->checkAccess('viewUser', array('uid' => $uid)))
             throw new CHttpException(403);
-        $model = LUser::model()->findByPk($uid);
         $model->setScenario('registered');
         $this->render('view', array('user' => $model));
     }
@@ -361,7 +358,7 @@ class UserController extends Controller {
         if ($result)
             Yii::app()->user->setFlash('lily.onetime.success', LilyModule::t('You were successfully logged in.'));
         else
-            Yii::app()->setFlash('lily.onetime.fail', LilyModule::t('Wrong one-time login token.'));
+            Yii::app()->setFlash('lily.onetime.error', LilyModule::t('Wrong one-time login token.'));
         $this->redirect(isset($redirectUrl) ? $redirectUrl : Yii::app()->homeUrl);
     }
 

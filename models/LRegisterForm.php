@@ -32,7 +32,7 @@ class LRegisterForm extends CFormModel {
     /**
      * @var string rememberMe field
      */
-    public $rememberMe;
+    public $rememberMe = false;
     public $service = "email";
 
     /**
@@ -47,15 +47,28 @@ class LRegisterForm extends CFormModel {
             array('email, password', 'lily.components.LLoginFormValidator'),
             array('passwordRepeat', 'compare', 'compareAttribute' => 'password', 'message' => t('Passwords are not equal!')),
             array('passwordRepeat', 'required'),
+            array('email', 'inDB'),
         );
     }
 
+    /**
+     * Validator for email field, that checks if this email refers to existing account
+     * @param $attribute
+     * @param $params
+     */
+    public function inDB($attribute, $params)
+    {
+        $account = LAccount::model()->findByAttributes(array('service' => 'email', 'id' => $this->$attribute));
+        if (isset($account))
+            $this->addError($attribute, LilyModule::t("Account with such email already exist."));
+    }
+    
     /**
      * Declares attribute labels.
      */
     public function attributeLabels() {
         return array(
-            'rememberMe' => t('Remember me next time'),
+            'rememberMe' => LilyModule::t('Remember me next time'),
         );
     }
 

@@ -102,7 +102,7 @@ class LEmailAccountActivation extends CActiveRecord
      * by email and password
      * @param string $email
      * @param string $password
-     * @param integer $uid User id or account, null if it's new account
+     * @param integer|LUser $uid User id or LUser model instance, null if it's new user account
      * @param boolean $hash_password - whether to hash $password value
      * or not (defaults to true)
      * @return LEmailAccountActivation
@@ -119,7 +119,8 @@ class LEmailAccountActivation extends CActiveRecord
         $code->password = $password;
         $code->created = time();
         $code->uid = $uid;
-        return $code->save() ? $code : null;
+        if(!$code->save()) throw new CDbException("failed to create new activation code");
+        return $code;
     }
 
 }

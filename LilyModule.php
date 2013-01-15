@@ -105,11 +105,6 @@ class LilyModule extends CWebModule {
     public $enableUserMerge = true;
 
     /**
-     * @var boolean Whether to populate log messages
-     */
-    public $enableLogging = true;
-
-    /**
      * @var mixed callback, that takes LUser object as argument and return user's name
      */
     public $userNameFunction = null;
@@ -245,7 +240,7 @@ class LilyModule extends CWebModule {
                 }else if ($type == 'callback') {
                     call_user_func($relation['callback'], $event);
                 } else {
-                    throw new LException("Invalid onUsermerge value '$type'");
+                    throw new LException("Invalid onUserMerge value '$type'");
                 }
             }
         }
@@ -370,16 +365,21 @@ class LilyModule extends CWebModule {
                     if ($session->created + $this->sessionTimeout >= time()) {
                         $this->_session = $session;
                         Yii::app()->user->name = $this->user->getName($this->userNameFunction);
-                        if ($this->user->state == LUser::BANNED_STATE) {
+                        if ($this->user->state == LUser::BANNED_STATE && Yii::app()->authManager->checkAccess('unbanUser', $this->user->uid, array('uid' => $this->user->uid))) {
+                            $this->user->state = LUser::ACTIVE_STATE;
+                            if (!$this->user->save())
+                                throw new CDbException("can't save user");
+                        }
+                        if ($this->user->state == LUser::BANNED_STATE || ($this->user->state == LUser::DELETED_STATE && !Yii::app()->user->checkAccess('restoreUser', array('user' => $this->user)))) {
                             $logout = true;
-                            $session->delete();
+                            if (!$session->delete())
+                                throw new CDbException("can't delete session");
                         } else {
                             if ($this->user->state == LUser::DELETED_STATE) {
                                 $route = Yii::app()->urlManager->parseUrl(Yii::app()->request);
                                 if (!($route == LilyModule::route("user/switch_state")
                                         && Yii::app()->request->getParam('uid') == $this->user->uid
                                         && Yii::app()->request->getParam('mode') == LUser::ACTIVE_STATE) && $route != LilyModule::route("user/logout")) {
-                                    Yii::log("User is deleted route:$route", CLogger::LEVEL_WARNING, 'lily');
                                     Yii::app()->request->redirect(Yii::app()->urlManager->createUrl(LilyModule::route("user/switch_state"), array('uid' => $this->user->uid, 'mode' => LUser::ACTIVE_STATE)));
                                 }
                             } else {
@@ -388,8 +388,8 @@ class LilyModule extends CWebModule {
                             }
                             $logout = false;
                         }
-                    }else
-                        $session->delete();
+                    }else if (!$session->delete())
+                        throw new CDbException("can't delete session");
                 }
             }
             if ($logout) {
