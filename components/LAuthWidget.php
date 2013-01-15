@@ -32,7 +32,7 @@ class LAuthWidget extends CWidget {
     /**
      * @var string submit button label
      */
-    public $submitLabel = 'Login';
+    public $submitLabel = null;
     /**
      * @var bool Whether to show rememberMe checkbox
      */
@@ -47,7 +47,7 @@ class LAuthWidget extends CWidget {
      */
     public function init() {
         parent::init();
-
+        if(!isset($this->submitLabel)) $this->submitLabel = LilyModule::t('Login');
 
         // Some default properties from component configuration
         if (!isset($this->services))

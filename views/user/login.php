@@ -1,8 +1,9 @@
 <?php
-$this->pageTitle = Yii::app()->name . ' - Login';
+/* @var $this Controller*/
+$this->pageTitle = LilyModule::t('{appName} - Login', array('{appName}' => Yii::app()->name));
 $this->breadcrumbs = array(
-    'Login',
+    LilyModule::t('Login')
 );
-?><h1>Login</h1>
-<p>Please fill out the following form with your login credentials:</p>
-<?php $this->widget('LAuthWidget', array('model' => $model, 'services' => $services, 'showRememberMe' => true, 'submitLabel' => 'Login', 'action' => '')); ?>
+?><h1><?php echo LilyModule::t('Login');?></h1>
+<p><?php echo LilyModule::t('Please fill out the following form with your login credentials:');?></p>
+<?php $this->widget('LAuthWidget', array('model' => $model, 'services' => $services, 'showRememberMe' => true, 'submitLabel' => LilyModule::t('Login'), 'action' => '')); ?>

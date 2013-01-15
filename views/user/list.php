@@ -1,4 +1,10 @@
-<h1>Users</h1>
+<?php
+/* @var $this Controller*/
+$this->pageTitle = LilyModule::t('{appName} - Users', array('{appName}' => Yii::app()->name));
+$this->breadcrumbs = array(
+    LilyModule::t('Users')
+);
+?><h1><?php echo LilyModule::t('Users');?></h1>
 <style>
     #userListOptions input[type=checkbox]{
         float:left;

@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * LUser class file.
  *
@@ -25,17 +24,17 @@
  *
  * @package application.modules.lily.models
  */
-class LUser extends CActiveRecord
-{
+class LUser extends CActiveRecord {
+
     const DELETED_STATE = -1;
     const BANNED_STATE = -2;
     const ACTIVE_STATE = 0;
+
     /**
      * Getter for nameId property
      * @return string
      */
-    public function getNameId()
-    {
+    public function getNameId() {
         $result = '';
         if (isset($this->name)) {
             $result .= $this->name;
@@ -58,8 +57,7 @@ class LUser extends CActiveRecord
      * Getter for id property
      * @return int
      */
-    public function getId()
-    {
+    public function getId() {
         return $this->uid;
     }
 
@@ -67,8 +65,7 @@ class LUser extends CActiveRecord
      * Getter for name property
      * @return mixed
      */
-    public function getName()
-    {
+    public function getName() {
         $userNameFunction = LilyModule::instance()->userNameFunction;
         if (isset($userNameFunction))
             return call_user_func($userNameFunction, $this);
@@ -80,24 +77,21 @@ class LUser extends CActiveRecord
      * @param string $className active record class name.
      * @return LUser the static model class
      */
-    public static function model($className = __CLASS__)
-    {
+    public static function model($className = __CLASS__) {
         return parent::model($className);
     }
 
     /**
      * @return string the associated database table name
      */
-    public function tableName()
-    {
+    public function tableName() {
         return '{{lily_user}}';
     }
 
     /**
      * @return array validation rules for model attributes.
      */
-    public function rules()
-    {
+    public function rules() {
         return array(
             array('state, inited', 'safe', 'on' => 'search'),
             array('state, inited', 'default', 'value' => 0),
@@ -107,8 +101,7 @@ class LUser extends CActiveRecord
     /**
      * @return array relational rules.
      */
-    public function relations()
-    {
+    public function relations() {
         //Empty array of default relations, possibly later it will contain something...
         $relations = array(
             'reciever' => array(self::BELONGS_TO, 'LUser', 'state'),
@@ -117,20 +110,17 @@ class LUser extends CActiveRecord
     }
 
     //@TODO What will happen if id==null
-    public function getAccountIds($uid = null)
-    {
+    public function getAccountIds($uid = null) {
         if (!isset($uid))
             $uid = $this->uid;
         $ids = $this->getDbConnection()->createCommand()->select('aid')->from(LAccount::model()->tableName())->where('uid=:uid', array(':uid' => $uid))->queryColumn();
         return $ids;
     }
 
-
     /**
      * @return array customized attribute labels (name=>label)
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return array(
             'uid' => LilyModule::t('User id'),
             'state' => LilyModule::t('State of user'),
@@ -142,8 +132,7 @@ class LUser extends CActiveRecord
      * Retrieves a list of models based on the current search/filter conditions.
      * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
      */
-    public function search()
-    {
+    public function search() {
         // Warning: Please modify the following code to remove attributes that
         // should not be searched.
 
@@ -154,8 +143,8 @@ class LUser extends CActiveRecord
         $criteria->compare('inited', $this->inited);
 
         return new CActiveDataProvider($this, array(
-            'criteria' => $criteria,
-        ));
+                    'criteria' => $criteria,
+                ));
     }
 
     /**
@@ -163,8 +152,7 @@ class LUser extends CActiveRecord
      * Return created user or null if creation failed
      * @return LUser created user instance
      */
-    public static function create()
-    {
+    public static function create() {
         $user = new LUser;
         if (!$user->save()) {
             throw new CDbException("failed to create new user");
@@ -173,15 +161,16 @@ class LUser extends CActiveRecord
         Yii::log("Created new user with uid {$user->uid}", CLogger::LEVEL_INFO, 'lily');
         return $user;
     }
-    
-    
+
     /**
-     * Helper function for view
-     * @param type $data
-     * @return string 
+     * Returns the state label for user
+     * @param LUser $user
+     * @return string label
      */
-    public static function getStateLabel($data) {
-        switch ($data->state) {
+    public static function getStateLabel($user) {
+        if (!isset($user))
+            return null;
+        switch ($user->state) {
             case self::ACTIVE_STATE:
                 return LilyModule::t("Active");
                 break;
@@ -192,10 +181,21 @@ class LUser extends CActiveRecord
                 return LilyModule::t("Banned");
                 break;
             default:
-                return LilyModule::t("Appended to {user}", array("{user}" => CHtml::link(CHtml::encode($data->reciever->name), array("user/view", "uid" => $data->state)))
+                return LilyModule::t("Appended to {user}", array("{user}" => CHtml::link(CHtml::encode($user->reciever->name), array("user/view", "uid" => $user->state)))
                 );
                 break;
         }
+    }
+
+    /**
+     * Returns the initialization state label for user
+     * @param LUser $user
+     * @return string label
+     */
+    public static function getInitedLabel($user) {
+        if (!isset($user))
+            return null;
+        return LilyModule::t($user->inited ? "Initialized" : "Not initialized");
     }
 
 }

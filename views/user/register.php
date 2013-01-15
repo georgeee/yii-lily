@@ -1,10 +1,11 @@
 <?php
-$this->pageTitle = Yii::app()->name . ' - Registration';
+/* @var $this Controller*/
+$this->pageTitle = LilyModule::t('{appName} - E-mail registration', array('{appName}' => Yii::app()->name));
 $this->breadcrumbs = array(
-    'Registration',
+    LilyModule::t('E-mail registration')
 );
-?><h1>Registration</h1>
-<p>Please fill out the following form:</p>
+?><h1><?php echo LilyModule::t('E-mail registration');?></h1>
+<p><?php echo LilyModule::t('Please fill out the following form:');?></p>
 <div class="form">
     <?php
     $form = $this->beginWidget('CActiveForm', array(
@@ -20,7 +21,7 @@ $this->breadcrumbs = array(
     <div class="formDiv">
             <div class="emailFieldsDiv">              
 
-                <p class="note">If you forgot your password, you can restore it using <a href="<?php echo Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'));?>">this page</a>.</p>
+                <p class="note"><?php echo LilyModule::t('If you forgot your password, you can restore it using {restorePageLink}', array('{restorePageLink}' => CHtml::link(LilyModule::t('this page'), Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'))))); ?>.</p>
 
                 <div class="row">
                     <?php echo $form->labelEx($model, 'email'); ?>
@@ -33,9 +34,9 @@ $this->breadcrumbs = array(
                     <?php echo $form->passwordField($model, 'password'); ?>
                     <?php echo $form->error($model, 'password'); ?>
                     <p class="hint">
-                        In password you can use lowercase and uppercase latin letters, characters (excluding quotes) &quot;-.,;=+~/\[]{}!@#$%^*&amp;()_|&quot; and simple whitespace.
-                        <br /> Password's length must be from 8 to 32 characters.
-                    </p>
+                            <?php echo LilyModule::t('In password you can use lowercase and uppercase latin letters, characters (excluding quotes) {passwordSymbols} and simple whitespace.
+        <br /> Password\'s length must be from 8 to 32 characters.', array('{passwordSymbols}' => '&quot;-.,;=+~/\[]{}!@#$%^*&amp;()_|&quot;')); ?>
+                        </p>
                 </div>
                 <div class="row">
                     <?php echo $form->labelEx($model, 'passwordRepeat'); ?>
@@ -52,7 +53,7 @@ $this->breadcrumbs = array(
         </div>
         <?php } ?>
         <div class="row buttons">
-            <?php echo CHtml::submitButton("Register me", array('class'=>'submitButton')); ?>
+            <?php echo CHtml::submitButton(LilyModule::t("Register me"), array('class'=>'submitButton')); ?>
         </div>
     </div>
     <?php $this->endWidget(); ?>

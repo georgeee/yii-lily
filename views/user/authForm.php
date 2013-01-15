@@ -2,8 +2,8 @@
     <?php
     $form = $this->beginWidget('CActiveForm', array(
         'id' => $id,
-        'htmlOptions' => array('class'=>'authForm'),
-        'action'=>$action,
+        'htmlOptions' => array('class' => 'authForm'),
+        'action' => $action,
         'enableClientValidation' => true,
         'clientOptions' => array(
             'validateOnSubmit' => true,
@@ -50,15 +50,15 @@
     <div class="formDiv">
         <?php if (isset($services['email'])) { ?>
             <div class="emailFieldsDiv">
-                <p class="note emailFieldHint">Use fields Email, Password when method "E-mail" was selected</p>                
-                
-                <?php if(LilyModule::instance()->accountManager->registerEmail){ ?>
-                <p class="note">If you're not yet registered, just fill in E-mail and password fields with your e-mail address and a password you want to use. You'll be automaticaly registrated.</p>
-<?php }else{ ?>
-                <p class="note">If you're not yet registered, just go to <?php echo CHtml::link("registration page", array("user/register")); ?> and pass the registration. Or you can choose another authentication method.</p>
-                <?php }?>
+                <p class="note emailFieldHint"><?php echo LilyModule::t('Use fields Email, Password when method "E-mail" was selected'); ?></p>                
 
-                <p class="note">If you forgot your password, you can restore it using <a href="<?php echo Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'));?>">this page</a>.</p>
+                <?php if (LilyModule::instance()->accountManager->registerEmail) { ?>
+                    <p class="note"><?php echo LilyModule::t('If you\'re not yet registered, just fill in E-mail and password fields with your e-mail address and a password you want to use. You\'ll be automaticaly registrated.'); ?></p>
+                <?php } else { ?>
+                    <p class="note"><?php echo LilyModule::t('If you\'re not yet registered, just go to {registrationPageLink} and pass the registration. Or you can choose another authentication method.', array('{registrationPageLink}' => CHtml::link(LilyModule::t("registration page"), array("user/register")))); ?></p>
+                <?php } ?>
+
+                <p class="note"><?php echo LilyModule::t('If you forgot your password, you can restore it using {restorePageLink}', array('{restorePageLink}' => CHtml::link(LilyModule::t('this page'), Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'))))); ?>.</p>
 
                 <div class="row">
                     <?php echo $form->labelEx($model, 'email'); ?>
@@ -70,20 +70,22 @@
                     <?php echo $form->labelEx($model, 'password'); ?>
                     <?php echo $form->passwordField($model, 'password'); ?>
                     <?php echo $form->error($model, 'password'); ?>
-<!--                    <p class="hint">
-                        In password you can use lowercase and uppercase latin letters, characters (excluding quotes) &quot;-.,;=+~/\[]{}!@#$%^*&amp;()_|&quot; and simple whitespace.
-                        <br /> Password's length must be from 8 to 32 characters.
-                    </p>-->
+                    <?php if (LilyModule::instance()->accountManager->registerEmail) { ?>
+                        <p class="hint">
+                            <?php echo LilyModule::t('In password you can use lowercase and uppercase latin letters, characters (excluding quotes) {passwordSymbols} and simple whitespace.
+        <br /> Password\'s length must be from 8 to 32 characters.', array('{passwordSymbols}' => '&quot;-.,;=+~/\[]{}!@#$%^*&amp;()_|&quot;')); ?>
+                        </p>
+                    <?php } ?>
                 </div>
             </div>
         <?php } ?>
-        <div class="row rememberMeFieldDiv" <?php if(!$showRememberMe){ ?>style="display:none;"<?php } ?>>
+        <div class="row rememberMeFieldDiv" <?php if (!$showRememberMe) { ?>style="display:none;"<?php } ?>>
             <?php echo $form->checkBox($model, 'rememberMe', array('class' => 'authMethodRememberMe')); ?>
             <?php echo $form->label($model, 'rememberMe', array('class' => 'authMethodRememberMeLabel')); ?>
             <?php echo $form->error($model, 'rememberMe'); ?>
         </div>
         <div class="row buttons">
-            <?php echo CHtml::submitButton($submitLabel, array('class'=>'submitButton')); ?>
+            <?php echo CHtml::submitButton($submitLabel, array('class' => 'submitButton')); ?>
         </div>
     </div>
     <?php $this->endWidget(); ?>

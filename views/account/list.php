@@ -1,4 +1,10 @@
-<h1>Accounts</h1>
+<?php
+/* @var $this Controller*/
+$this->pageTitle = LilyModule::t('{appName} - Accounts', array('{appName}' => Yii::app()->name));
+$this->breadcrumbs = array(
+    LilyModule::t('Accounts')
+);
+?><h1><?php echo LilyModule::t('Accounts');?></h1>
 
 <?php
 Yii::app()->clientScript->registerCssFile(LilyModule::instance()->getAssetsUrl() . "/lily.css");

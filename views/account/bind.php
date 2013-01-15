@@ -1,8 +1,10 @@
 <?php
-$this->pageTitle = Yii::app()->name . ' - Account bind';
+/* @var $this Controller*/
+$this->pageTitle = LilyModule::t('{appName} - Bind account', array('{appName}' => Yii::app()->name));
 $this->breadcrumbs = array(
-    'Bind account',
+    LilyModule::t('Accounts')=>$this->createUrl('account/list'),
+    LilyModule::t('Bind')
 );
-?><h1>Bind new account</h1>
-<p>Please fill out the following form with your login credentials:</p>
-<?php $this->widget('LAuthWidget', array('model' => $model, 'services' => $services, 'showRememberMe' => false, 'submitLabel' => 'Bind', 'action' => '')); ?>
+?><h1><?php echo LilyModule::t('Bind new account'); ?></h1>
+<p><?php echo LilyModule::t('Please fill out the following form with your login credentials:'); ?></p>
+<?php $this->widget('LAuthWidget', array('model' => $model, 'services' => $services, 'showRememberMe' => false, 'submitLabel' => LilyModule::t('Bind'), 'action' => '')); ?>

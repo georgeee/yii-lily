@@ -106,7 +106,7 @@ class AccountController extends Controller {
                             LilyModule::instance()->sessionData->merge[$merge_id] = $identity->account->uid;
                             if (!LilyModule::instance()->session->save())
                                 throw new CDbException("can't save session");
-                            Yii::app()->user->setFlash('lily.account.merge.error', LilyModule::t('You\'ve tried to bind an account, that\'s already bound to {user}.', array('{user}' => CHtml::link($identity->account->user->nameId, $this->createUrl('user/view', array('uid' => $identity->account->uid))))));
+                            Yii::app()->user->setFlash('lily.account.merge.info', LilyModule::t('You\'ve tried to bind an account, that\'s already bound to {user}.', array('{user}' => CHtml::link($identity->account->user->nameId, $this->createUrl('user/view', array('uid' => $identity->account->uid))))));
                             $authIdentity->redirect($this->createUrl('account/merge', array('merge_id' => $merge_id)));
                         }else {
                             Yii::app()->user->setFlash('lily.account.bound.error', LilyModule::t('Account is already bound to another user.'));

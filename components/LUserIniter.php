@@ -144,7 +144,7 @@ class LUserIniter extends CApplicationComponent {
                 );
             foreach (LilyModule::instance()->relations as $name => $relation) {
                 if (isset($relation['onRegister'])) {
-                    $onRegister_route = is_array($relation['onResetgister']) ? $relation['onRegister'][0] : $relation['onRegister'];
+                    $onRegister_route = is_array($relation['onRegister']) ? $relation['onRegister'][0] : $relation['onRegister'];
                     $onRegister_query = is_array($relation['onRegister']) ? array_slice($relation['onRegister'], 1) : array();
                     $steps[$count++] = (object) array(
                                 'page' => Yii::app()->createUrl($onRegister_route, $onRegister_query),
