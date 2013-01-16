@@ -45,12 +45,12 @@ class LAccountManager extends CApplicationComponent {
     public $restoreMailSubjectCallback = null;
 
     /**
-     * @var boolean Should we register new e-mail account on the fly, or it's necessary to do it on registration page
+     * @var boolean should we register new e-mail account on the fly, or it's necessary to do it on registration page
      */
     public $registerEmail = true;
 
     /**
-     * @var boolean Should we automaticaly log user in after e-mail registration
+     * @var boolean should we automaticaly log user in after e-mail registration
      */
     public $loginAfterRegistration = true;
 
@@ -105,7 +105,7 @@ class LAccountManager extends CApplicationComponent {
         if (isset($this->informationMailView))
             $message->setBody(array('account' => $account), 'text/html');
         else
-            $message->setBody(LilyModule::t('Your email was successfully registered on <a href="{siteUrl}">{siteName}</a>!', array('{siteUrl}' => Yii::app()->createAbsoluteUrl(''), '{siteName}' => Yii::app()->name)), 'text/html');
+            $message->setBody(LilyModule::t('Your email was successfully registered on <a href="{siteUrl}">{siteName}</a>!', array('{siteUrl}' => Yii::app()->createAbsoluteUrl(Yii::app()->homeUrl), '{siteName}' => Yii::app()->name)), 'text/html');
         $message->addTo($account->id);
         $message->from = $this->adminEmail;
         $recipient_count = Yii::app()->mail->send($message);
@@ -150,8 +150,8 @@ To activate it you have to go by this <a href="{activationUrl}">link</a></li> in
 If you haven\'t entered this email on {siteName}, than just ignore this message.<br />
 <br />
 Yours respectfully,<br />
-administration of {siteName}.', array('{siteUrl}' => Yii::app()->homeUrl, '{siteName}' => Yii::app()->name,
-                        '{activationUrl}' => Yii::app()->createAbsoluteUrl(LilyModule::route('user/activate'), array('code' => $code->code)))), 'text/html');
+administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteUrl(Yii::app()->homeUrl), '{siteName}' => Yii::app()->name,
+                        '{activationUrl}' => Yii::app()->createAbsoluteUrl('/'.LilyModule::route('user/activate'), array('code' => $code->code)))), 'text/html');
         $message->addTo($code->email);
         $message->from = $this->adminEmail;
         $recipient_count = Yii::app()->mail->send($message);
@@ -183,10 +183,11 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->homeUrl, '{site
      * (activation email if $activate is true, or information email if it's false)
      * @param LUser $user_account model instance of the user account
      * (for purpose of using it in mail message) or NULL $code was provided for new account registration
+     * @param boolean $rememberMe Whether to remember user, authenticating him after activation
      * @return LEmailAccountActivation|LAccount created activation code or account instance if activation set to off
      * @throws CDbException
      */
-    public function performRegistration($email, $password, $activate = null, $send_mail = null, LUser $user_account = null) {
+    public function performRegistration($email, $password, $activate = null, $send_mail = null, LUser $user_account = null, $rememberMe = false) {
         $this->errorCode = 0;
         if (!isset($activate))
             $activate = $this->activate;
@@ -209,7 +210,7 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->homeUrl, '{site
             }
         }
 
-        $code = LEmailAccountActivation::create($email, $password, $user_account);
+        $code = LEmailAccountActivation::create($email, $password, $user_account, $rememberMe);
         if (!isset($code)) {
             throw new CDbException("failed to create LEmailAccountActivation DB record ($email, $password, " . ($user_account == null ? 'null' : $user_account->uid) . ").");
         }
@@ -376,8 +377,8 @@ And someone (possibly you) requested password restoration. <br />
 If it was you, open <a href="{restoreUrl}">link</a></li> in your browser in order to login on website and then change the password in account settings. <br />
 <br />
 Yours respectfully,<br />
-administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteUrl(''), '{siteName}' => Yii::app()->name,
-                        '{restoreUrl}' => Yii::app()->createAbsoluteUrl(LilyModule::route('user/onetime'), array('token' => $onetime->token)))), 'text/html');
+administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteUrl(Yii::app()->homeUrl), '{siteName}' => Yii::app()->name,
+                        '{restoreUrl}' => Yii::app()->createAbsoluteUrl('/'.LilyModule::route('user/onetime'), array('token' => $onetime->token)))), 'text/html');
         $message->addTo($account->id);
         $message->from = $this->adminEmail;
         $recipient_count = Yii::app()->mail->send($message);

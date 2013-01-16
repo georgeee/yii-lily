@@ -75,6 +75,11 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
      * (null means that we're trying to authenticate, not bind an account to already existing user)
      */
     public $user = null;
+    
+    /**
+     * @var boolean $rememberMe Whether to remember user, authenticating him after activation 
+     */    
+    public $rememberMe = false;
 
     /**
      * This function simply tries to authenticate auth identity
@@ -97,7 +102,7 @@ class LEmailService extends EAuthServiceBase implements IAuthService {
         if (!isset($account)) {
             if (LilyModule::instance()->accountManager->registerEmail || $forceRegisterEmail) {
                 //Performing the registration
-                LilyModule::instance()->accountManager->performRegistration($email, $password, null, null, $this->user);
+                LilyModule::instance()->accountManager->performRegistration($email, $password, null, null, $this->user, $this->rememberMe);
                 if (LilyModule::instance()->accountManager->activate) {
                     if (LilyModule::instance()->accountManager->errorCode == 0) {
                         $this->errorCode = self::ERROR_ACTIVATION_MAIL_SENT;

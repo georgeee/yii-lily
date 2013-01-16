@@ -20,47 +20,41 @@
  * @property string $password Password hash of account, that will be created after activation
  * @property string $code Activation code, which was sent to mail and serves as the key to activation operation
  * @property integer $created Timestamp of the moment, when code was created
- *
+ * @property boolean $rememberMe Whether to remember user, authenticating him after activation
  *
  * @package application.modules.lily.models
  */
-
-class LEmailAccountActivation extends CActiveRecord
-{
+class LEmailAccountActivation extends CActiveRecord {
 
     /**
      * Returns the static model of the specified AR class.
      * @param string $className active record class name.
      * @return LEmailAccountActivation the static model class
      */
-    public static function model($className = __CLASS__)
-    {
+    public static function model($className = __CLASS__) {
         return parent::model($className);
     }
 
     /**
      * @return string the associated database table name
      */
-    public function tableName()
-    {
+    public function tableName() {
         return '{{lily_email_account_activation}}';
     }
 
     /**
      * @return array validation rules for model attributes.
      */
-    public function rules()
-    {
+    public function rules() {
         return array(
-            array('code, created, email, password, uid', 'safe', 'on' => 'search'),
+            array('code, created, email, password, uid, rememberMe', 'safe', 'on' => 'search'),
         );
     }
 
     /**
      * @return array relational rules.
      */
-    public function relations()
-    {
+    public function relations() {
         return array(
             'user' => array(self::BELONGS_TO, 'LUser', 'uid'),
         );
@@ -69,32 +63,15 @@ class LEmailAccountActivation extends CActiveRecord
     /**
      * @return array customized attribute labels (name=>label)
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return array(
             'code_id' => LilyModule::t('Code id'),
             'code' => LilyModule::t('Code'),
             'created' => LilyModule::t('Created'),
             'uid' => LilyModule::t('User id'),
             'email' => LilyModule::t('E-mail'),
+            'rememberMe' => LilyModule::t('Remember me after registration'),
         );
-    }
-
-    /**
-     * Retrieves a list of models based on the current search/filter conditions.
-     * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
-     */
-    public function search()
-    {
-        $criteria = new CDbCriteria;
-        $criteria->compare('code', $this->email_id);
-        $criteria->compare('created', $this->code_id);
-        $criteria->compare('uid', $this->code, true);
-        $criteria->compare('email', $this->created, true);
-
-        return new CActiveDataProvider($this, array(
-            'criteria' => $criteria,
-        ));
     }
 
     /**
@@ -103,23 +80,22 @@ class LEmailAccountActivation extends CActiveRecord
      * @param string $email
      * @param string $password
      * @param integer|LUser $uid User id or LUser model instance, null if it's new user account
-     * @param boolean $hash_password - whether to hash $password value
-     * or not (defaults to true)
+     * @param boolean $rememberMe Whether to remember user, authenticating him after activation
      * @return LEmailAccountActivation
      */
-    public static function create($email, $password, $uid = null, $hash_password = true)
-    {
-        if ($hash_password) {
-            $password = LilyModule::instance()->hash($password);
-        }
-        if (isset($uid) && is_object($uid)) $uid = $uid->uid;
+    public static function create($email, $password, $uid = null, $rememberMe = false) {
+        $password = LilyModule::instance()->hash($password);
+        if (isset($uid) && is_object($uid))
+            $uid = $uid->uid;
         $code = new LEmailAccountActivation();
         $code->code = LilyModule::instance()->generateRandomString();
         $code->email = $email;
         $code->password = $password;
         $code->created = time();
         $code->uid = $uid;
-        if(!$code->save()) throw new CDbException("failed to create new activation code");
+        $code->rememberMe = $rememberMe;
+        if (!$code->save())
+            throw new CDbException("failed to create new activation code");
         return $code;
     }
 

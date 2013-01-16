@@ -25,108 +25,179 @@ Basic installation
 ------------------------------------
  
  1. Download extensions listed above and put them to `protected/extensions`.
- 2. Configure required extensions and lily module:
- 
-```php
+ 2. Edit index.php:
+    ```php
+ 	Yii::createWebApplication($config);
+	Yii::app()->onBeginRequest = array('LilyModule', 'initModule');
+	Yii::app()->run();
+    ```
+ 3. Configure required extensions and lily module:
+    ```php
  	
  	...
  	
 	'aliases' => array(
-		'lily' => 'application.modules.lily',
+		'lily' => 'ext.lily',
 	),
 	
  	...
- 
-	// preloading 'log' component
-	'preload'=>array(
-		...,
-		'lilyModuleLoader',
-	),
-	...
-	
 	// autoloading model and component classes
 	'import'=>array(
 		...,
-        'ext.eoauth.*',
-        'ext.eoauth.lib.*',
-        'ext.lightopenid.*',
-        'ext.eauth.*',
-        'ext.eauth.services.*',
-        'ext.yii-mail.YiiMailMessage',
+            'ext.eoauth.*',
+            'ext.eoauth.lib.*',
+            'ext.lightopenid.*',
+            'ext.eauth.*',
+            'ext.eauth.services.*',
+            'ext.yii-mail.YiiMailMessage',
+            'lily.LilyModule',
 	),
 	...
 	'modules'=>array(
-		'lily' => array(
-			'class' => 'lily.LilyModule',
-		),
-		...,
+            'lily' => array(
+                'class' => 'lily.LilyModule',
+                ..., //Lily configurations
+            ),
+            ...,
 	),
 	...
 	// application components
 	'components'=>array(
-		'user'=>array(
-			// enable cookie-based authentication
-			'allowAutoLogin'=>true,
-            'loginUrl' => array('/lily/user/login'),
-		),
-        'lilyModuleLoader' => array(
-            'class' => 'lily.LilyModuleLoader',
-        ),
-        'loid' => array(
-            'class' => 'ext.lightopenid.loid',
-        ),
-        'eauth' => array(
-            'class' => 'ext.eauth.EAuth',
-            'popup' => true, // Use the popup window instead of redirecting.
-            'services' => array(// You can change the providers and their classes.
-                'onetime' => array(
-                    'class' => 'lily.services.LOneTimeService',
+            'urlManager' => array(
+                'urlFormat' => 'path',
+                'showScriptName' => true,
+                'rules' => array(
+                    //The rule is necessary to use, otherwise "Too many redirects" error may occure during user initialization
+                    '<module:\w+>/<controller:\w+>/<action:\w+>' => '<module>/<controller>/<action>',
                 ),
-                /*
-                'email' => array(
-                    'class' => 'lily.services.LEmailService',
-                ),
-                'google' => array(
-                    'class' => 'lily.services.LGoogleService',
-                ),
-                'yandex' => array(
-                    'class' => 'lily.services.LYandexService',
-                ),
-                'twitter' => array(
-                    // регистрация приложения: https://dev.twitter.com/apps/new
-                    'class' => 'lily.services.LTwitterService',
-                    'key' => '..',
-                    'secret' => '..',
-                ),
-                'vkontakte' => array(
-                    // регистрация приложения: http://vkontakte.ru/editapp?act=create&site=1
-                    'class' => 'lily.services.LVKontakteService',
-                    'client_id' => '..',
-                    'client_secret' => '..',
-                ),
-                'mailru' => array(
-                    // регистрация приложения: http://api.mail.ru/sites/my/add
-                    'class' => 'lily.services.LMailruService',
-                    'client_id' => '..',
-                    'client_secret' => '..',
-                ),
-                */
             ),
+            'authManager' => array(
+                'class' => 'CDbAuthManager',
+                'connectionID' => 'db', //Type in your db connection name instead of db
+                'assignmentTable' => '{{rbac_assignment}}',
+                'itemChildTable' => '{{rbac_item_child}}',
+                'itemTable' => '{{rbac_item}}',
+                'defaultRoles'=>array('userAuthenticated'),
+            ),
+            'loid' => array(
+                'class' => 'ext.lightopenid.loid',
+            ),
+            'eauth' => array(
+                'class' => 'ext.eauth.EAuth',
+                'popup' => true,
+                'services' => array(
+                    'email' => array(
+                        'class' => 'lily.services.LEmailService',
+                    ),
+                    'onetime' => array(
+                        'class' => 'lily.services.LOneTimeService',
+                    ),
+                    'google' => array(
+                        'class' => 'lily.services.LGoogleService',
+                    ),
+                    'yandex' => array(
+                        'class' => 'lily.services.LYandexService',
+                    ),
+                    'twitter' => array(
+                        'class' => 'lily.services.LTwitterService',
+                        'key' => '',
+                        'secret' => '',
+                    ),
+                    'vkontakte' => array(
+                        'class' => 'lily.services.LVKontakteService',
+                        'client_id' => '',
+                        'client_secret' => '',
+                    ),
+                    'mailru' => array(
+                        'class' => 'lily.services.LMailruService',
+                        'client_id' => '',
+                        'client_secret' => '',
+                    ),
+                ),
+            ),
+            'user' => array(
+                // enable cookie-based authentication
+                'allowAutoLogin' => true,
+                'loginUrl' => array('/lily/user/login'),
+                'autoUpdateFlash' => false,
+            ),
+            //Mail component is configured for use with gmail,
+            //read corresponding docs to get acquinted with full set of parameters
+            'mail' => array(
+                'class' => 'ext.yii-mail.YiiMail',
+                'transportType' => 'smtp',
+                'viewPath' => 'application.views.mail',
+                'logging' => true,
+                'dryRun' => false,
+                'transportOptions' => array(
+                    'host' => 'smtp.gmail.com',
+                    'username' => 'example@gmail.com',
+                    'password' => 'Example password',
+                    'port' => 465,
+                    'encryption' => 'ssl',
+                ),
+            ),
+            ...,
+            //Logging component is optional, but recommended
+            'log' => array(
+                'class' => 'CLogRouter',
+                'routes' => array(
+                    //Route for collecting Lily's trace and info messages
+                    array(
+                        'class' => 'CDbLogRoute',
+                        'logTableName' => 'ls_log_linfo',
+                        'categories' => 'lily',
+                        'levels' => 'trace, info',
+                        'connectionID' => 'db',
+                    ),
+                    //Route for collecting Lily's warning and error messages
+                    array(
+                        'class' => 'CDbLogRoute',
+                        'logTableName' => 'ls_log_lwe',
+                        'categories' => 'lily',
+                        'levels' => 'error, warning',
+                        'connectionID' => 'db',
+                    ),
+                    //Route for collecting exceptions
+                    array(
+                        'class' => 'CDbLogRoute',
+                        'logTableName' => 'ls_log_exc',
+                        'categories' => 'exception.*',
+                        'connectionID' => 'db',
+                    ),
+                ),
+            ),
+            ...,
         ),
-        'mail' => array(
-            'class' => 'ext.yii-mail.YiiMail',
-        ),
-		
-        ...,
-	),
 	...
-```
- 3. Migrate your DB tables using one of the following ways:
+    ```
+ 4. Edit console.php:
+    ```php 
+    'components' => array(
+        'db' => ..., //Your db, just as in main config
+        'authManager' => ..., //Your authManager settings, just as in main config
+    ),
+    'commandMap' => array(
+        'migrate' => array(
+            'class' => 'system.cli.commands.MigrateCommand',
+            'migrationPath' => 'application.migrations',
+            'migrationTable' => 'ls_migration',
+            'connectionID' => 'db',
+        ),
+        'lily_rbac' => array(
+            'class' => 'lily.commands.LAuthInstaller'
+        ),
+    ),
+    ```
+ 5. Deploy the DB tables:
+     1. `./yiic migrate --migrationPath=ext.lily.migrations --migrationTable=lily_migration up`
+     2. Create authManager tables into your DB, if you haven't done it yet
  
-     * run `yiic migrate --migrationPath=application.modules.lily.migrations --migrationTable=lily_migration` (take a look at migrations section in Yii tutorial if you are not familar with that)
-     * update your DB manually (`data/lily.mysql.sql` for mysql and `data/lily.sqlite.sql` for sqlite)
- 
- 4. Configure app menu (see sample project for example).
+ 6. Initialize RBAC structure for Lily:
+    1. Run `./yiic lily_rbac`, it will install structure'
+    2. Run `./yiic lily_rbac assign --user {uid} --role {role, default userAdmin}` to assign role to a user
+
+ 7. Edit views, refered to main menu. Check out the example to understand, what is fine to be there
 
 Configuration
 ------------------------------
@@ -144,12 +215,11 @@ Lily offers you these configuration options:
 			'randomKeyLength' => 20, //lengths of random keys, generated by application (e.g. activation key)
 			'passwordRegexp' => '~^[a-zA-Z0-9\\-\\_\\|\\.\\,\\;\\=\\+\\~/\\\\\\[\\]\\{\\}\\!\\@\\#\\$\\%\\^\\*\\&\\(\\)\\ ]{8,32}$~',//regular expression for password checking
 			'sessionTimeout => 604800, //timeout, after that session will be classified as expired
-			'enableUserMerge' => true, //Whether to allow user merging
-			'enableLogging' => true, //Whether to populate log messages
+			'enableUserMerge' => true, //whether to allow user merging
 			'userNameFunction' => null, //callback, that takes LUser object as argument and return user's name
 			'allowedRoutes' => array(), //routes, that are allowed during any init step
 			'routePrefix' => 'lily', //prefix to module uri (e.g. lily prefix means all actions of the module have uris like 'lily/<controllerId>/<actionId>)
-			'relations' => array(), //User table relations, see format in docs
+			'relations' => array(), //user table relations
 			
 			//LUserIniter component properties
 			'userIniter' => array(
@@ -166,6 +236,8 @@ Lily offers you these configuration options:
 				'informationMailSubjectCallback' => null, //callback for email subject of information letter
 				'activationMailSubjectCallback' => null, //callback for email subject of activation letter
 				'restoreMailSubjectCallback' => null, //callback for email subject of restoration letter
+                                'registerEmail' => true, //should we register new e-mail account on the fly, or it's necessary to do it on registration page
+                                'loginAfterRegistration' => true, //should we automaticaly log user in after e-mail registration
 				'activate' => true, //Whether to activate new account
 				'sendMail' => true, //Whether to send mails
 				'adminEmail' => 'admin@example.org', //Email to put it in mails (From field)
@@ -208,4 +280,4 @@ Sample project
 License
 -------------------------------
 
-The module was released under the [New BSD License](http://www.opensource.org/licenses/bsd-license.php), so you'll find the latest version on [GitHub](https://github.com/georgeee/yii-lily).
+The module is being developed under the [New BSD License](http://www.opensource.org/licenses/bsd-license.php), so you'll find the latest version on [GitHub](https://github.com/georgeee/yii-lily).

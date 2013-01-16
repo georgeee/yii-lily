@@ -195,7 +195,7 @@ class LUser extends CActiveRecord {
     public static function getInitedLabel($user) {
         if (!isset($user))
             return null;
-        return LilyModule::t($user->inited ? "Initialized" : "Not initialized");
+        return $user->inited ? LilyModule::t("Initialized") : LilyModule::t("Not initialized");
     }
 
 }

@@ -57,8 +57,9 @@
                 <?php } else { ?>
                     <p class="note"><?php echo LilyModule::t('If you\'re not yet registered, just go to {registrationPageLink} and pass the registration. Or you can choose another authentication method.', array('{registrationPageLink}' => CHtml::link(LilyModule::t("registration page"), array("user/register")))); ?></p>
                 <?php } ?>
+                    
 
-                <p class="note"><?php echo LilyModule::t('If you forgot your password, you can restore it using {restorePageLink}', array('{restorePageLink}' => CHtml::link(LilyModule::t('this page'), Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'))))); ?>.</p>
+                <p class="note"><?php echo LilyModule::t('If you forgot your password, you can restore it using {restorePageLink}', array('{restorePageLink}' => CHtml::link(LilyModule::t('this page'), Yii::app()->createUrl('/'.LilyModule::route('account/restore'))))); ?>.</p>
 
                 <div class="row">
                     <?php echo $form->labelEx($model, 'email'); ?>

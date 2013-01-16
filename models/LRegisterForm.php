@@ -68,7 +68,7 @@ class LRegisterForm extends CFormModel {
      */
     public function attributeLabels() {
         return array(
-            'rememberMe' => LilyModule::t('Remember me next time'),
+            'rememberMe' => LilyModule::t('Remember me after registration'),
         );
     }
 

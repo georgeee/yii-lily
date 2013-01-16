@@ -21,7 +21,7 @@ $this->breadcrumbs = array(
     <div class="formDiv">
             <div class="emailFieldsDiv">              
 
-                <p class="note"><?php echo LilyModule::t('If you forgot your password, you can restore it using {restorePageLink}', array('{restorePageLink}' => CHtml::link(LilyModule::t('this page'), Yii::app()->urlManager->createUrl(LilyModule::route('account/restore'))))); ?>.</p>
+                <p class="note"><?php echo LilyModule::t('If you forgot your password, you can restore it using {restorePageLink}', array('{restorePageLink}' => CHtml::link(LilyModule::t('this page'), Yii::app()->createUrl('/'.LilyModule::route('account/restore'))))); ?>.</p>
 
                 <div class="row">
                     <?php echo $form->labelEx($model, 'email'); ?>
@@ -45,7 +45,7 @@ $this->breadcrumbs = array(
                     
                 </div>
             </div>
-        <?php if(LilyModule::instance()->accountManager->loginAfterRegistration && Yii::app()->user->isGuest){ ?>
+        <?php if(LilyModule::instance()->accountManager->loginAfterRegistration){ ?>
         <div class="row rememberMeFieldDiv">
             <?php echo $form->checkBox($model, 'rememberMe', array('class' => 'authMethodRememberMe')); ?>
             <?php echo $form->label($model, 'rememberMe', array('class' => 'authMethodRememberMeLabel')); ?>

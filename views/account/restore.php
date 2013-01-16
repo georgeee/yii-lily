@@ -30,6 +30,6 @@ $this->breadcrumbs = array(
     <div class="row buttons">
     <?php echo CHtml::submitButton(LilyModule::t('Restore')); ?>
     <?php echo CHtml::link(LilyModule::t('Cancel'), $this->createUrl(Yii::app()->user->isGuest ? 'user/login' : 'account/list')); ?>
-    </div>1
+    </div>
 <?php $this->endWidget(); ?>
 </div><!-- form -->

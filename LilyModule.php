@@ -380,7 +380,7 @@ class LilyModule extends CWebModule {
                                 if (!($route == LilyModule::route("user/switch_state")
                                         && Yii::app()->request->getParam('uid') == $this->user->uid
                                         && Yii::app()->request->getParam('mode') == LUser::ACTIVE_STATE) && $route != LilyModule::route("user/logout")) {
-                                    Yii::app()->request->redirect(Yii::app()->urlManager->createUrl(LilyModule::route("user/switch_state"), array('uid' => $this->user->uid, 'mode' => LUser::ACTIVE_STATE)));
+                                    Yii::app()->request->redirect(Yii::app()->createUrl('/'.LilyModule::route("user/switch_state"), array('uid' => $this->user->uid, 'mode' => LUser::ACTIVE_STATE)));
                                 }
                             } else {
                                 if (!$this->user->inited)

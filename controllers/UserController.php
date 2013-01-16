@@ -60,9 +60,7 @@ class UserController extends Controller {
             echo CActiveForm::validate($model);
             Yii::app()->end();
         }
-
         $model_new = false;
-
         $services = LilyModule::instance()->services;
         if ($service != null) {
             $_services = $services;
@@ -90,6 +88,7 @@ class UserController extends Controller {
             if ($model->service == 'email') {
                 $authIdentity->email = $model->email;
                 $authIdentity->password = $model->password;
+                $authIdentity->rememberMe = $model->rememberMe;
             }
             if ($authIdentity->authenticate()) {
                 if ($model->service == 'email' && $authIdentity->errorCode == LEmailService::ERROR_INFORMATION_MAIL_FAILED)
@@ -164,6 +163,7 @@ class UserController extends Controller {
                 $authIdentity->email = $email;
                 $authIdentity->password = $password;
                 $authIdentity->user = Yii::app()->user->isGuest ? null : LilyModule::instance()->user;
+                $authIdentity->rememberMe = $model->rememberMe;
                 if ($authIdentity->authenticate(true)) {
                     if (LilyModule::instance()->accountManager->loginAfterRegistration && Yii::app()->user->isGuest) {
                         $identity = new LUserIdentity($authIdentity);
@@ -202,6 +202,10 @@ class UserController extends Controller {
      * @param $code Activation code
      */
     public function actionActivate($code) {
+        $_code = LEmailAccountActivation::model()->findByAttributes(array('code' => $code));
+        if (isset($_code)) {
+            $rememberMe = $_code->rememberMe;
+        }
         $account = LilyModule::instance()->accountManager->performActivation($code);
         /* $errorCode:
          * <ul>
@@ -239,7 +243,7 @@ class UserController extends Controller {
             $authIdentity->authenticate(false, false);
             $identity = new LUserIdentity($authIdentity);
             $identity->authenticate();
-            $result = Yii::app()->user->login($identity, $account->rememberMe ? LilyModule::instance()->sessionTimeout : 0);
+            $result = Yii::app()->user->login($identity, $rememberMe ? LilyModule::instance()->sessionTimeout : 0);
             if ($result) {
                 Yii::app()->user->setFlash('lily.login.success', LilyModule::t('You were successfully logged in.'));
                 $authIdentity->redirect($this->createUrl('view'));

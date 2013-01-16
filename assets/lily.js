@@ -14,12 +14,12 @@ jQuery(function($) {
                     }else{
                         el.find('.emailFieldsDiv').css('display', 'none')
                     }
+                    el.find('.authMethodSelect option').removeAttr('selected')
                     el.find('.authMethodSelect .option_'+$(this).attr('service')).attr('selected','selected')
                     return false;
                 })
                 el.find('.authMethodSwitcherDiv .authMethod.'+el.find('.authMethodSelect').val()).click()
                 el.submit(function(event){
-                    console.log('WTF')
                     var service = el.find('.authMethodSelect').val();
                     if(service == 'email'){
                 
@@ -27,7 +27,7 @@ jQuery(function($) {
                         event.preventDefault();
                         var a = el.find('.auth-service.'+service+' a');
                         var href = a.attr('href');
-                        var rememberMe = el.find('.authMethodRememberMe').val();
+                        var rememberMe = el.find('.authMethodRememberMe').is(':checked')?1:0;
                         var found = false;
                         var sp = href.split('?');
                         if(sp.length==1) href = href + "?rememberMe="+rememberMe;
