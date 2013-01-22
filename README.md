@@ -29,9 +29,11 @@ Basic installation
  1. Download extensions listed above and put them to `protected/extensions`.
  2. Edit index.php:
 ```php
+
  	Yii::createWebApplication($config);
 	Yii::app()->onBeginRequest = array('LilyModule', 'initModule');
 	Yii::app()->run();
+
 ```
  3. Configure required extensions and lily module:
 ```php
