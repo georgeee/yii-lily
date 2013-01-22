@@ -27,7 +27,7 @@ if (Yii::app()->user->checkAccess('listAccounts', array('uid' => $user->uid))) {
     $attrs[] = array(
         'label' => LilyModule::t('Accounts'),
         'type' => 'raw',
-        'value' => CHtml::link(LilyModule::t("Go to account list"), $this->createUrl("account/list", array('uid' => $user->uid))),
+        'value' => CHtml::link(LilyModule::t("Go to account list"), array('/'.LilyModule::route("account/list"), 'uid' => $user->uid)),
     );
     $attrs[] = array(
         'type' => 'raw',

@@ -30,7 +30,6 @@ $this->breadcrumbs = array(
 </form>
 
 <?php
-//@TODO hide different state (see action code)
 
 $columns = array(
     array('name' => 'uid'),

@@ -19,7 +19,6 @@ class LAuthInstaller extends CConsoleCommand
 
     public function actionIndex(){
         $auth=Yii::app()->authManager;
-        /* @var $auth CAuthManager */
         $auth->createOperation('listUser', 'view user list');
         $auth->createOperation('deleteUser', 'delete user');
         $auth->createOperation('restoreUser', 'restore deleted user');
@@ -28,7 +27,6 @@ class LAuthInstaller extends CConsoleCommand
         
         
         $auth->createOperation('viewUser', 'view user page (also affects on the list)');
-        /* @var $viewUserOp CAuthItem */
         $auth->createOperation('viewDeletedUser', 'view deleted user page (also affects on the list)',
                 'return isset($params["user"])?$params["user"]->state==LUser::DELETED_STATE:false;')->addChild('viewUser');
         $auth->createOperation('viewBannedUser', 'view banned user page (also affects on the list)',
@@ -41,16 +39,14 @@ class LAuthInstaller extends CConsoleCommand
         $auth->createOperation('listAccounts', 'view account list');
         $auth->createOperation('deleteAccount', 'delete account');
         $auth->createOperation('editEmailAccount', 'edit e-mail account\'s password');
-//        $auth->createOperation('restoreEmailAccount', 'restore e-mail account\'s password');
         
-        $ownBizRule = 'if(isset($params["user"]))$params["uid"] = $params["user"]->uid;return isset($params["uid"])?$params["uid"]==Yii::app()->user->id:false;';
+        $ownBizRule = 'if(isset($params["user"]))$params["uid"] = $params["user"]->uid;return isset($params["uid"])?$params["uid"]==$params["userId"]:false;';
         $auth->createTask('viewOwnUser', 'view own user page', $ownBizRule)->addChild('viewUser');
         $auth->createTask('deleteOwnUser', 'delete own user', $ownBizRule)->addChild('deleteUser');
         $auth->createTask('restoreOwnUser', 'restore own user', $ownBizRule)->addChild('restoreUser');
         $auth->createTask('listOwnAccounts', 'view own user account list', $ownBizRule)->addChild('listAccounts');
         $auth->createTask('deleteOwnAccount', 'delete own account', $ownBizRule)->addChild('deleteAccount');
         $auth->createTask('editOwnEmailAccount', 'edit own e-mail account\'s password', $ownBizRule)->addChild('editEmailAccount');
-//        $auth->createTask('restoreOwnEmailAccount', 'restore own e-mail account\'s password', $ownBizRule)->addChild('restoreEmailAccount');
         
         $authenticated = $auth->createRole('userAuthenticated', 'authenticated user', 'return !Yii::app()->user->isGuest;');
         $authenticated->addChild('viewOwnUser');
@@ -59,8 +55,9 @@ class LAuthInstaller extends CConsoleCommand
         $authenticated->addChild('listOwnAccounts');
         $authenticated->addChild('deleteOwnAccount');
         $authenticated->addChild('editOwnEmailAccount');
-//        $authenticated->addChild('restoreOwnEmailAccount');
-
+        
+        $auth->createRole('userGuest', 'not (strictly) authenticated user', 'return Yii::app()->user->isGuest;');
+        
         $moderator = $auth->createRole('userModerator', 'user moderator');
         $moderator->addChild('listUser');
         $moderator->addChild('viewUser');
@@ -77,7 +74,6 @@ class LAuthInstaller extends CConsoleCommand
         $admin->addChild('listAccounts');
         $admin->addChild('deleteAccount');
         $admin->addChild('editEmailAccount');
-//        $admin->addChild('restoreEmailAccount');
         
         $auth->save();
     }

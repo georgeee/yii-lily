@@ -7,6 +7,8 @@ Lily is an Yii module that provides user managment funtionality. It allows you t
 
 Out of the box it only provides only a skeleton for user data management through AR realtions. It doesn't contain any fields such as name or birthday. You're free to create exactly what you want to.
 
+Module support simple user managment functionalities, such as delete and ban. It's written with use of Yii's authentication manager, so it's easy to manage user's permissions on module's actions.
+
 When using this module user can have multiple ways to authenticate (e.g. twitter + email-password). Also you can merge two user accounts into a single one. This action will be suggested if you're trying to use credentials that already were used by another user. You will be able to set a handler on the user merge event in order to update your tables (for example, to change the owner of content).
 
 Module name is a tribute to one beautiful Russian poem written by Vladimir Mayakovsky and called Lilechka (Лилечка). If you speak Russian, I really suggest you to read it.
@@ -23,7 +25,7 @@ Lily requires several extensions to be installed:
 
 Basic installation
 ------------------------------------
- 
+ 0. Download and put lily module to `protected/extensions/lily` directory
  1. Download extensions listed above and put them to `protected/extensions`.
  2. Edit index.php:
     ```php
@@ -87,10 +89,10 @@ Basic installation
                 'popup' => true,
                 'services' => array(
                     'email' => array(
-                        'class' => 'lily.services.LEmailService',
+                        'class' => 'lily.services.LEmailService', 
                     ),
                     'onetime' => array(
-                        'class' => 'lily.services.LOneTimeService',
+                        'class' => 'lily.services.LOneTimeService', //service, required by Lily
                     ),
                     'google' => array(
                         'class' => 'lily.services.LGoogleService',
@@ -197,7 +199,7 @@ Basic installation
     1. Run `./yiic lily_rbac`, it will install structure'
     2. Run `./yiic lily_rbac assign --user {uid} --role {role, default userAdmin}` to assign role to a user
 
- 7. Edit views, refered to main menu. Check out the example to understand, what is fine to be there
+ 7. Edit views, refered to main menu. Check out the [example](https://github.com/georgeee/yii-lily-sample) to understand, what is fine to be there
 
 Configuration
 ------------------------------
@@ -275,7 +277,23 @@ Also, I highly recommend you to take a look at sample project below.
 Sample project
 ------------------------------
 
-[Lily sample project] (https://github.com/georgeee/yii-lily-sample)
+I highly recommend you to look at [Lily sample project] (https://github.com/georgeee/yii-lily-sample), it will make using of module a bit more clear.
+
+Plans on future (@TODO)
+----------------------
+
+1. Make interface more beautiful
+    1. Flash messages (Everywhere, where they should be)
+    2. Message templates - make cool views to use by default
+    3. Bootstrap themes (as an option)
+2. Interface additions
+    1. Session managment
+    2. Simple role managment
+3. Labels, texts and messages
+    1. A lot of text doesn't sound good, my English isn't perfect.
+    2. Translate all the stuff to russian
+
+I'm not sure, when I'll finish all the work, so it would be really great if you'll help me with some stuff. Especcially with #3. 
 
 License
 -------------------------------

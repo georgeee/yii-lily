@@ -109,7 +109,6 @@ class LUser extends CActiveRecord {
         return array_merge($relations, LilyModule::instance()->userRelations);
     }
 
-    //@TODO What will happen if id==null
     public function getAccountIds($uid = null) {
         if (!isset($uid))
             $uid = $this->uid;
@@ -181,7 +180,7 @@ class LUser extends CActiveRecord {
                 return LilyModule::t("Banned");
                 break;
             default:
-                return LilyModule::t("Appended to {user}", array("{user}" => CHtml::link(CHtml::encode($user->reciever->name), array("user/view", "uid" => $user->state)))
+                return LilyModule::t ("Appended to {user}", array("{user}" => CHtml::link(CHtml::encode($user->reciever->name), array("user/view", "uid" => $user->state)))
                 );
                 break;
         }

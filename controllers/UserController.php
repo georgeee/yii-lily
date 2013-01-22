@@ -104,7 +104,6 @@ class UserController extends Controller {
                         if (!$user->save())
                             throw new CDbException("failed to save user");
                     }
-                    //@TODO if user can unban himself, it's better to authenticate him and give him a hint, that he was under banned
                     if ($user->state == LUser::BANNED_STATE) {
                         Yii::app()->user->setFlash('lily.login.error', LilyModule::t("Your account was put under ban. Please contact to site administrator for details."));
                     } else {

@@ -284,10 +284,11 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
      *
      * @param integer $oldUid Old user id
      * @param integer $newUid New user id
+     * @param integer $aid Account id (through which this merging is performed)
      * @return boolean whether the operation succeed
      * @throws LException, CDbException
      */
-    public function merge($oldUid, $newUid) {
+    public function merge($oldUid, $newUid, $aid = null) {
         $this->errorCode = 0;
         if (!isset($oldUid))
             throw new LException("oldUid argument is not set");
@@ -301,7 +302,7 @@ administration of {siteName}.', array('{siteUrl}' => Yii::app()->createAbsoluteU
         if (!isset($newUser))
             throw new LException("no user found with uid $newUid");
 
-        LilyModule::instance()->onUserMerge(new LMergeEvent($oldUid, $newUid));
+        LilyModule::instance()->onUserMerge(new LMergeEvent($oldUid, $newUid, $aid));
 
         $newUser->state = $oldUser->state;
         $oldUser->state = $newUid;

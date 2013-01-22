@@ -104,7 +104,7 @@ class AccountController extends Controller {
                             $merge_id = LilyModule::instance()->generateRandomString();
                             if (!isset(LilyModule::instance()->sessionData->merge))
                                 LilyModule::instance()->sessionData->merge = array();
-                            LilyModule::instance()->sessionData->merge[$merge_id] = $identity->account->uid;
+                            LilyModule::instance()->sessionData->merge[$merge_id] = array($identity->account->uid, $identity->account->aid);
                             if (!LilyModule::instance()->session->save())
                                 throw new CDbException("can't save session");
                             Yii::app()->user->setFlash('lily.account.merge.info', LilyModule::t('You\'ve tried to bind an account, that\'s already bound to {userLink}.', array('{userLink}' => CHtml::link($identity->account->user->nameId, $this->createUrl('user/view', array('uid' => $identity->account->uid))))));
@@ -138,7 +138,7 @@ class AccountController extends Controller {
             throw new CHttpException(404, LilyModule::t('Incorrect merge id specified'));
         $accept = Yii::app()->request->getPost('accept');
         if (isset($accept)) {
-            LilyModule::instance()->accountManager->merge(LilyModule::instance()->sessionData->merge[$merge_id], Yii::app()->user->id);
+            LilyModule::instance()->accountManager->merge(LilyModule::instance()->sessionData->merge[$merge_id][0], Yii::app()->user->id, LilyModule::instance()->sessionData->merge[$merge_id][1]);
             unset(LilyModule::instance()->sessionData->merge[$merge_id]);
             $this->redirect(array('user/view'));
         } else {

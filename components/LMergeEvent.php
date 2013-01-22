@@ -21,17 +21,23 @@ class LMergeEvent extends CModelEvent
      * @var integer new Uid, an uid of the user, to which another user will be appended
      */
     public $newUid;
-
+    
+    /**
+     * @var integer Account id (through which this merging is performed)
+     */
+    public $aid;
+    
     /**
      * This function constructs new LMergeEvent
      * @param $oldUid
      * @param $newUid
      */
-    public function __construct($oldUid, $newUid)
+    public function __construct($oldUid, $newUid, $aid = null)
     {
         parent::__construct(null, null);
         $this->newUid = $newUid;
         $this->oldUid = $oldUid;
+        $this->aid = $aid;
     }
 }
 
