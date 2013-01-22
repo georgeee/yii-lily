@@ -35,6 +35,7 @@ Basic installation
 	Yii::app()->run();
 
 ```
+
  3. Configure required extensions and lily module:
 ```php
  	
