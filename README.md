@@ -18,7 +18,7 @@ Requirements
 
 Lily requires several extensions to be installed:
 
- * [EOAuth (required by EAuth)](http://www.yiiframework.com/extension/eoauth, "Yii EOAuth extension") 
+ * [EOAuth (required by EAuth)](http://www.yiiframework.com/extension/eoauth "Yii EOAuth extension") 
  * [Loid extension (required by EAuth)](http://www.yiiframework.com/extension/loid "Yii loid extension")
  * [Yii mail (in order to send notification and activation mails for email authentication type)](http://www.yiiframework.com/extension/mail/ "Yii mail extension")
  * [EAuth][]
@@ -28,13 +28,13 @@ Basic installation
  0. Download and put lily module to `protected/extensions/lily` directory
  1. Download extensions listed above and put them to `protected/extensions`.
  2. Edit index.php:
-    ```php
+```php
  	Yii::createWebApplication($config);
 	Yii::app()->onBeginRequest = array('LilyModule', 'initModule');
 	Yii::app()->run();
-    ```
+```
  3. Configure required extensions and lily module:
-    ```php
+```php
  	
  	...
  	
@@ -172,9 +172,9 @@ Basic installation
             ...,
         ),
 	...
-    ```
+```
  4. Edit console.php:
-    ```php 
+```php 
     'components' => array(
         'db' => ..., //Your db, just as in main config
         'authManager' => ..., //Your authManager settings, just as in main config
@@ -190,7 +190,7 @@ Basic installation
             'class' => 'lily.commands.LAuthInstaller'
         ),
     ),
-    ```
+```
  5. Deploy the DB tables:
      1. `./yiic migrate --migrationPath=ext.lily.migrations --migrationTable=lily_migration up`
      2. Create authManager tables into your DB, if you haven't done it yet
@@ -278,6 +278,7 @@ Sample project
 ------------------------------
 
 I highly recommend you to look at [Lily sample project] (https://github.com/georgeee/yii-lily-sample), it will make using of module a bit more clear.
+Demo is [here](http://georgeee.ru/lily-sample/).
 
 Plans on future (@TODO)
 ----------------------
