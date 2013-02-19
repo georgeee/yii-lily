@@ -153,12 +153,18 @@ class LUserIniter extends CApplicationComponent {
                     );
                 }
             }
-            if ($this->showFinishStep)
+            if ($this->showFinishStep) {
                 $steps[$count++] = (object) array(
                             'page' => Yii::app()->createUrl($initRoute, array('action' => 'finish')),
                             'name' => "Finish",
                             'allowed' => array($initRoute),
                 );
+            } else {
+                $steps[$count++] = (object) array(
+                    'page' => Yii::app()->createUrl($initRoute, array('action' => 'next')),
+                    'allowed' => array($initRoute),
+                );
+            }
             LilyModule::instance()->session->data->userInitData = new stdClass;
             LilyModule::instance()->session->data->userInitData->steps = $this->_steps = $steps;
             LilyModule::instance()->session->data->userInitData->stepId = $this->_stepId = 0;
