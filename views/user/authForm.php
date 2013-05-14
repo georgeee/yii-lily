@@ -9,8 +9,9 @@
             'validateOnSubmit' => true,
         ),)
     );
+    
+    Yii::app()->clientScript->registerScript('lily-init'.$id, '$("#'.$id.'").lily();');
     ?>
-    <script type="text/javascript">/*<![CDATA[*/ jQuery(function($){$('#<?php echo $id; ?>').lily();}); /*]]>*/</script>
     <h2>Choose your auth method:</h2>
 
     <div class="authMethodSwitcherDiv">
