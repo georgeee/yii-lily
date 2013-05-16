@@ -82,7 +82,7 @@ class LAuthInstaller extends CConsoleCommand
         $auth=Yii::app()->authManager;
         
         if ($auth->isAssigned($role, $user)) {
-            echo 'This role already assigned for user ' . $user . PHP_EOL;
+            echo $role . ' role already assigned for user ' . $user . PHP_EOL;
             return;
         }
         
