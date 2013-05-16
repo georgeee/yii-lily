@@ -199,7 +199,7 @@ Basic installation
  
  6. Initialize RBAC structure for Lily:
     1. Run `./yiic lily_rbac`, it will install structure'
-    2. Run `./yiic lily_rbac assign --user {uid} --role {role, default userAdmin}` to assign role to a user
+    2. Run `./yiic lily_rbac assign --user={uid} --role={role, default userAdmin}` to assign role to a user
 
  7. Edit views, refered to main menu. Check out the [example](https://github.com/georgeee/yii-lily-sample) to understand, what is fine to be there
 
