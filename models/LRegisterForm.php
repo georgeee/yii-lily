@@ -45,7 +45,7 @@ class LRegisterForm extends CFormModel {
             //Special validator. It uses default validators, but on clientvalidation
             //prefixes 'em with JS code, that checks service set to email (otherwise it's incorrect to validate them)
             array('email, password', 'lily.components.LLoginFormValidator'),
-            array('passwordRepeat', 'compare', 'compareAttribute' => 'password', 'message' => t('Passwords are not equal!')),
+            array('passwordRepeat', 'compare', 'compareAttribute' => 'password', 'message' => LilyModule::t('Passwords are not equal!')),
             array('passwordRepeat', 'required'),
             array('email', 'inDB'),
         );
